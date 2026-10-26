@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Очередь технических заявок — Helpes{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 fw-bold mb-0">Очередь технических заявок</h1>
+    <a href="{% url 'tickets:tech_queue' %}?scope={{ scope }}" class="btn btn-outline-secondary btn-sm">
+        Обновить очередь
+    </a>
+</div>
+
+<div class="btn-group mb-3 flex-wrap" role="group">
+    <a href="?scope=available" class="btn {% if scope == 'available' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        Доступные и мои ({{ counts.unassigned }})
+    </a>
+    <a href="?scope=mine" class="btn {% if scope == 'mine' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        Мои в работе ({{ counts.mine }})
+    </a>
+    <a href="?scope=all_open" class="btn {% if scope == 'all_open' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        Все открытые ({{ counts.all_open }})
+    </a>
+    <a href="?scope=done" class="btn {% if scope == 'done' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        Выполненные
+    </a>
+</div>
+
+<form method="get" class="card shadow-sm border-0 p-3 mb-3">
+    <input type="hidden" name="scope" value="{{ scope }}">
+    <div class="row g-2 align-items-center">
+        <div class="col-12 col-md-6">
+            <input type="text" name="q" value="{{ search_q }}" class="form-control"
+                   placeholder="Поиск по номеру HELP-..., имени сотрудника, кабинету или неисправности">
+        </div>
+        <div class="col-7 col-md-3">
+            <select name="status" class="form-select">
+                <option value="">— Все статусы —</option>
+                {% for code, label in status_choices %}
+                    <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-5 col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">Найти</button>
+            {% if search_q or status_filter %}
+                <a href="?scope={{ scope }}" class="btn btn-outline-secondary">Сброс</a>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Номер</th>
+                    <th>Создана</th>
+                    <th>Сотрудник и кабинет</th>
+                    <th>Оборудование</th>
+                    <th>Неисправность</th>
+                    <th>Статус</th>
+                    <th>Исполнитель</th>
+                    <th class="text-end">Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tickets %}
+                <tr>
+                    <td class="fw-bold">
+                        <a href="{% url 'tickets:tech_detail' t.ticket_number %}">{{ t.ticket_number }}</a>
+                        {% if t.is_stale %}
+                            <span class="badge bg-warning text-dark d-block mt-1">Без обновлений &gt;24ч</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ t.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>
+                        <div class="fw-semibold">{{ t.employee_name }}</div>
+                        <div class="small text-muted">{{ t.location_display }}</div>
+                    </td>
+                    <td class="small">
+                        {% for item in t.items.all %}
+                            <div>{{ item.category.name }} — <strong>{{ item.quantity }}</strong></div>
+                        {% endfor %}
+                    </td>
+                    <td>{{ t.short_description }}</td>
+                    <td>
+                        <span class="badge status-badge-{{ t.status }}">{{ t.get_status_display }}</span>
+                    </td>
+                    <td>
+                        {% if t.assigned_to %}
+                            {{ t.assigned_to.display_name }}
+                        {% else %}
+                            <span class="text-danger fw-semibold">Свободна</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if not t.assigned_to and t.status != 'DONE' %}
+                            <form method="post" action="{% url 'tickets:tech_claim' t.ticket_number %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm">Взять в работу</button>
+                            </form>
+                        {% endif %}
+                        <a href="{% url 'tickets:tech_detail' t.ticket_number %}" class="btn btn-outline-primary btn-sm">Открыть</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">Заявок по выбранному фильтру нет.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

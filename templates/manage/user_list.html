@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Специалисты и роли — Helpes{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 fw-bold mb-0">Учётные записи специалистов</h1>
+    <a href="{% url 'accounts:user_add' %}" class="btn btn-primary">+ Добавить специалиста</a>
+</div>
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Логин</th>
+                    <th>ФИО</th>
+                    <th>Роль</th>
+                    <th>Статус</th>
+                    <th>Открытых заявок</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td class="fw-semibold">{{ u.username }}</td>
+                    <td>{{ u.display_name }}</td>
+                    <td>{{ u.get_role_display }}</td>
+                    <td>
+                        {% if u.is_active %}
+                            <span class="badge bg-success">Активен</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Отключён</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.open_tickets_count }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-sm btn-outline-primary">Изменить</a>
+                        {% if u.is_active and u.pk != request.user.pk %}
+                            <a href="{% url 'accounts:user_deactivate' u.pk %}" class="btn btn-sm btn-outline-danger">Отключить</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

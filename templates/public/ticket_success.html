@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Заявка {{ ticket.ticket_number }} принята — Helpes{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0 text-center p-4">
+            <div class="card-body">
+                <div class="badge bg-success fs-6 mb-3 px-3 py-2">Заявка успешно зарегистрирована</div>
+                <h1 class="display-6 fw-bold mb-2">{{ ticket.ticket_number }}</h1>
+                <p class="text-muted mb-4">
+                    Заявка передана в общую очередь технической службы «Кыргыз Алтын».
+                </p>
+
+                <div class="text-start bg-light rounded p-3 mb-4">
+                    <p class="mb-1"><strong>Сотрудник:</strong> {{ ticket.employee_name }}</p>
+                    <p class="mb-1"><strong>Местоположение:</strong> {{ ticket.location_display }}</p>
+                    <p class="mb-1"><strong>Проблема:</strong> {{ ticket.short_description }}</p>
+                    <p class="mb-1"><strong>Статус:</strong> {{ ticket.get_status_display }}</p>
+                    <p class="mb-1"><strong>Оборудование:</strong></p>
+                    <ul class="mb-0">
+                        {% for item in ticket.items.all %}
+                            <li>{{ item.category.name }} — {{ item.quantity }} шт.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <a href="{% url 'tickets:public_create' %}" class="btn btn-outline-primary">
+                    Отправить ещё одну заявку
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Отключение учётной записи {{ target_user.display_name }} — Helpes{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm border-0 p-4">
+            <h1 class="h4 fw-bold mb-2">Деактивация специалиста: {{ target_user.display_name }}</h1>
+            <p class="text-muted">История ранее выполненных работ будет полностью сохранена.</p>
+
+            {% if open_tickets %}
+                <div class="alert alert-warning">
+                    <strong>Внимание!</strong> На специалиста сейчас назначено незавершённых заявок: <strong>{{ open_tickets|length }}</strong>.
+                    Выберите, как поступить с ними перед отключением учётной записи:
+                </div>
+                <ul class="small mb-3">
+                    {% for t in open_tickets %}
+                        <li><strong>{{ t.ticket_number }}</strong> — {{ t.location_display }} ({{ t.short_description }})</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ form.action_mode.label }}</label>
+                    <div>{{ form.action_mode }}</div>
+                    {% if form.action_mode.errors %}
+                        <div class="text-danger small mt-1">{{ form.action_mode.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold" for="{{ form.target_tech.id_for_label }}">{{ form.target_tech.label }}</label>
+                    {{ form.target_tech }}
+                    {% if form.target_tech.errors %}
+                        <div class="text-danger small mt-1">{{ form.target_tech.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Подтвердить отключение и перераспределить заявки</button>
+                    <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

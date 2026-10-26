@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Управление заявками (Администратор) — Helpes{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 fw-bold mb-0">Панель администратора — Все заявки</h1>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+        <a href="?filter=all" class="card text-decoration-none shadow-sm border-0 p-3 {% if filter_mode == 'all' and not status_filter %}border-start border-4 border-primary{% endif %}">
+            <div class="text-muted small">Всего заявок</div>
+            <div class="h4 fw-bold mb-0">{{ stats.total }}</div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="?filter=unassigned" class="card text-decoration-none shadow-sm border-0 p-3 {% if filter_mode == 'unassigned' %}border-start border-4 border-danger{% endif %}">
+            <div class="text-danger small">Неназначенные</div>
+            <div class="h4 fw-bold text-danger mb-0">{{ stats.unassigned }}</div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="?filter=stale" class="card text-decoration-none shadow-sm border-0 p-3 {% if filter_mode == 'stale' %}border-start border-4 border-warning{% endif %}">
+            <div class="text-warning small">Давно без обновлений</div>
+            <div class="h4 fw-bold text-warning mb-0">{{ stats.stale }}</div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="?status=DONE" class="card text-decoration-none shadow-sm border-0 p-3 {% if status_filter == 'DONE' %}border-start border-4 border-success{% endif %}">
+            <div class="text-success small">Выполнено</div>
+            <div class="h4 fw-bold text-success mb-0">{{ stats.done }}</div>
+        </a>
+    </div>
+</div>
+
+<form method="get" class="card shadow-sm border-0 p-3 mb-3">
+    <div class="row g-2 align-items-center">
+        <div class="col-12 col-md-4">
+            <select name="filter" class="form-select">
+                <option value="all" {% if filter_mode == 'all' %}selected{% endif %}>Все обращения</option>
+                <option value="unassigned" {% if filter_mode == 'unassigned' %}selected{% endif %}>Только свободные (неназначенные)</option>
+                <option value="stale" {% if filter_mode == 'stale' %}selected{% endif %}>Требуют внимания (&gt;24ч без обновлений)</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <select name="status" class="form-select">
+                <option value="">— Любой статус —</option>
+                {% for code, label in status_choices %}
+                    <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <select name="tech" class="form-select">
+                <option value="">— Любой исполнитель —</option>
+                {% for tech_user in techs %}
+                    <option value="{{ tech_user.id }}" {% if tech_filter == tech_user.id|stringformat:"s" %}selected{% endif %}>
+                        {{ tech_user.display_name }}{% if not tech_user.is_active %} (отключён){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">Применить</button>
+            <a href="{% url 'tickets:admin_ticket_list' %}" class="btn btn-outline-secondary">Сброс</a>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Номер</th>
+                    <th>Обновлена</th>
+                    <th>Сотрудник / Кабинет</th>
+                    <th>Оборудование и проблема</th>
+                    <th>Статус</th>
+                    <th>Исполнитель</th>
+                    <th class="text-end">Управление</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tickets %}
+                <tr>
+                    <td class="fw-bold">
+                        <a href="{% url 'tickets:admin_ticket_detail' t.ticket_number %}">{{ t.ticket_number }}</a>
+                        {% if t.is_stale %}
+                            <span class="badge bg-warning text-dark d-block mt-1">&gt;24ч без обновлений</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">{{ t.updated_at|date:"d.m.Y H:i" }}</td>
+                    <td>
+                        <div class="fw-semibold">{{ t.employee_name }}</div>
+                        <div class="small text-muted">{{ t.location_display }}</div>
+                    </td>
+                    <td>
+                        <div class="small fw-semibold">{{ t.short_description }}</div>
+                        <div class="small text-muted">
+                            {% for item in t.items.all %}
+                                <span>{{ item.category.name }} ({{ item.quantity }}){% if not forloop.last %}, {% endif %}</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td><span class="badge status-badge-{{ t.status }}">{{ t.get_status_display }}</span></td>
+                    <td>
+                        {% if t.assigned_to %}
+                            {{ t.assigned_to.display_name }}
+                        {% else %}
+                            <span class="text-danger fw-semibold">Не назначен</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'tickets:admin_ticket_detail' t.ticket_number %}" class="btn btn-sm btn-outline-primary">Назначить / История</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-4 text-muted">Заявок не найдено.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

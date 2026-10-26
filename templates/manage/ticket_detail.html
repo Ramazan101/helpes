@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Управление заявкой {{ ticket.ticket_number }} — Helpes{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 fw-bold mb-0">Управление заявкой {{ ticket.ticket_number }}</h1>
+    <div class="d-flex gap-2">
+        <a href="{% url 'tickets:tech_detail' ticket.ticket_number %}" class="btn btn-outline-primary btn-sm">
+            Открыть в режиме техника
+        </a>
+        <a href="{% url 'tickets:admin_ticket_list' %}" class="btn btn-outline-secondary btn-sm">← Ко всем заявкам</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge status-badge-{{ ticket.status }} fs-6">{{ ticket.get_status_display }}</span>
+                    <span class="text-muted small">Создана: {{ ticket.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                <p class="mb-2"><strong>Сотрудник:</strong> {{ ticket.employee_name }}</p>
+                <p class="mb-2"><strong>Местоположение:</strong> {{ ticket.location_display }}</p>
+                <p class="mb-2">
+                    <strong>Текущий исполнитель:</strong>
+                    {% if ticket.assigned_to %}
+                        {{ ticket.assigned_to.display_name }}
+                    {% else %}
+                        <span class="text-danger fw-semibold">Не назначен (в общей очереди)</span>
+                    {% endif %}
+                </p>
+                <hr>
+                <h2 class="h6 fw-bold">Затронутое оборудование ({{ ticket.total_equipment_count }} шт.):</h2>
+                <ul class="mb-3">
+                    {% for item in ticket.items.all %}
+                        <li>{{ item.category.name }} — <strong>{{ item.quantity }} шт.</strong></li>
+                    {% endfor %}
+                </ul>
+                <h2 class="h6 fw-bold">Краткое описание неисправности:</h2>
+                <p class="mb-2">{{ ticket.short_description }}</p>
+                {% if ticket.detailed_description %}
+                    <h2 class="h6 fw-bold">Подробное описание:</h2>
+                    <p class="text-pre-wrap mb-2">{{ ticket.detailed_description }}</p>
+                {% endif %}
+                {% if ticket.resolution_summary %}
+                    <div class="alert alert-success mt-3 mb-0">
+                        <strong>Результат ремонта:</strong> {{ ticket.resolution_summary }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h2 class="h5 fw-bold mb-3">Назначение / Переназначение специалиста</h2>
+                <form method="post" action="{% url 'tickets:admin_assign_ticket' ticket.ticket_number %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ assign_form.assigned_to.label }}</label>
+                        {{ assign_form.assigned_to }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ assign_form.note.label }}</label>
+                        {{ assign_form.note }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить назначение</button>
+                </form>
+            </div>
+        </div>
+
+        {% if ticket.status == 'DONE' %}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h2 class="h5 fw-bold mb-3">Повторное открытие выполненной заявки</h2>
+                <form method="post" action="{% url 'tickets:admin_reopen_ticket' ticket.ticket_number %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ reopen_form.reason.label }}</label>
+                        {{ reopen_form.reason }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ reopen_form.assigned_to.label }}</label>
+                        {{ reopen_form.assigned_to }}
+                    </div>
+                    <button type="submit" class="btn btn-warning">Повторно открыть заявку</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h2 class="h5 fw-bold mb-3">Рабочие комментарии диагностики</h2>
+                {% for c in ticket.comments.all %}
+                    <div class="border-bottom pb-2 mb-2">
+                        <div class="small text-muted">{{ c.author.display_name }} — {{ c.created_at|date:"d.m.Y H:i" }}</div>
+                        <div>{{ c.body }}</div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted small mb-0">Комментариев от специалистов пока нет.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h2 class="h5 fw-bold mb-3">Полный журнал истории заявки</h2>
+                <ul class="list-unstyled small mb-0">
+                    {% for h in ticket.history.all %}
+                    <li class="mb-2 pb-2 border-bottom">
+                        <strong>{{ h.get_action_display }}</strong> — {{ h.created_at|date:"d.m.Y H:i" }}<br>
+                        {% if h.actor %}Выполнил: {{ h.actor.display_name }}<br>{% endif %}
+                        {% if h.old_status or h.new_status %}Статус: {{ h.old_status|default:"—" }} → {{ h.new_status|default:"—" }}<br>{% endif %}
+                        {% if h.old_assignee or h.new_assignee %}Исполнитель: {{ h.old_assignee.display_name|default:"Очередь" }} → {{ h.new_assignee.display_name|default:"Очередь" }}<br>{% endif %}
+                        {% if h.note %}<span class="text-muted">{{ h.note }}</span>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

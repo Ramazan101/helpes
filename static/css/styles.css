@@ -1,0 +1,6 @@
+/* Стили статусов и мобильной адаптивности Helpes */
+.status-badge-NEW { background-color: #0d6efd; color: #fff; }
+.status-badge-IN_PROGRESS { background-color: #fd7e14; color: #fff; }
+.status-badge-WAITING { background-color: #ffc107; color: #212529; }
+.status-badge-DONE { background-color: #198754; color: #fff; }
+.text-pre-wrap { white-space: pre-wrap; }

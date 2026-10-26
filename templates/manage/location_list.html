@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Здания, этажи и кабинеты — Helpes{% endblock %}
+{% block content %}
+<h1 class="h3 fw-bold mb-4">Управление местоположениями (здания, этажи, кабинеты)</h1>
+<div class="row g-4">
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm border-0 p-3 mb-4">
+            <h2 class="h5 fw-bold mb-3">Добавить этаж</h2>
+            <form method="post" action="{% url 'locations:floor_add' %}">
+                {% csrf_token %}
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">{{ floor_form.building.label }}</label>
+                    {{ floor_form.building }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">{{ floor_form.name.label }}</label>
+                    {{ floor_form.name }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">{{ floor_form.sort_order.label }}</label>
+                    {{ floor_form.sort_order }}
+                </div>
+                <div class="form-check mb-3">
+                    {{ floor_form.is_active }}
+                    <label class="form-check-label">{{ floor_form.is_active.label }}</label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm w-100">Создать этаж</button>
+            </form>
+        </div>
+
+        <div class="card shadow-sm border-0 p-3 mb-4">
+            <h2 class="h5 fw-bold mb-3">Добавить кабинет</h2>
+            <form method="post" action="{% url 'locations:room_add' %}">
+                {% csrf_token %}
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">{{ location_form.floor.label }}</label>
+                    {{ location_form.floor }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">{{ location_form.name.label }}</label>
+                    {{ location_form.name }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">{{ location_form.sort_order.label }}</label>
+                    {{ location_form.sort_order }}
+                </div>
+                <div class="form-check mb-3">
+                    {{ location_form.is_active }}
+                    <label class="form-check-label">{{ location_form.is_active.label }}</label>
+                </div>
+                <button type="submit" class="btn btn-success btn-sm w-100">Создать кабинет</button>
+            </form>
+        </div>
+
+        <div class="card shadow-sm border-0 p-3">
+            <h2 class="h6 fw-bold mb-3">Добавить здание (необязательно)</h2>
+            <form method="post" action="{% url 'locations:building_add' %}">
+                {% csrf_token %}
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">{{ building_form.name.label }}</label>
+                    {{ building_form.name }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-semibold">{{ building_form.sort_order.label }}</label>
+                    {{ building_form.sort_order }}
+                </div>
+                <div class="form-check mb-3">
+                    {{ building_form.is_active }}
+                    <label class="form-check-label">{{ building_form.is_active.label }}</label>
+                </div>
+                <button type="submit" class="btn btn-outline-primary btn-sm w-100">Создать здание</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+        {% if buildings %}
+        <div class="card shadow-sm border-0 p-3 mb-4">
+            <h2 class="h5 fw-bold">Здания и корпуса</h2>
+            <table class="table table-sm align-middle mb-0">
+                <thead><tr><th>Здание</th><th>Порядок</th><th>Статус</th><th></th></tr></thead>
+                <tbody>
+                    {% for b in buildings %}
+                    <tr>
+                        <td class="fw-semibold">{{ b.name }}</td>
+                        <td>{{ b.sort_order }}</td>
+                        <td>{% if b.is_active %}<span class="badge bg-success">Активно</span>{% else %}<span class="badge bg-secondary">Скрыто</span>{% endif %}</td>
+                        <td class="text-end"><a href="{% url 'locations:building_edit' b.pk %}" class="btn btn-sm btn-outline-primary">Изменить</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <div class="card shadow-sm border-0 p-3 mb-4">
+            <h2 class="h5 fw-bold">Этажи</h2>
+            <table class="table table-sm align-middle mb-0">
+                <thead><tr><th>Этаж</th><th>Порядок</th><th>Статус</th><th></th></tr></thead>
+                <tbody>
+                    {% for f in floors %}
+                    <tr>
+                        <td class="fw-semibold">{{ f.full_name }}</td>
+                        <td>{{ f.sort_order }}</td>
+                        <td>{% if f.is_active %}<span class="badge bg-success">Активен</span>{% else %}<span class="badge bg-secondary">Скрыт</span>{% endif %}</td>
+                        <td class="text-end"><a href="{% url 'locations:floor_edit' f.pk %}" class="btn btn-sm btn-outline-primary">Изменить</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-muted text-center py-3">Этажи ещё не добавлены.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card shadow-sm border-0 p-3">
+            <h2 class="h5 fw-bold">Кабинеты и помещения</h2>
+            <table class="table table-sm align-middle mb-0">
+                <thead><tr><th>Полное название</th><th>Порядок</th><th>Статус</th><th></th></tr></thead>
+                <tbody>
+                    {% for loc in locations %}
+                    <tr>
+                        <td class="fw-semibold">{{ loc.full_title }}</td>
+                        <td>{{ loc.sort_order }}</td>
+                        <td>{% if loc.is_active %}<span class="badge bg-success">Доступен</span>{% else %}<span class="badge bg-secondary">Архив</span>{% endif %}</td>
+                        <td class="text-end"><a href="{% url 'locations:room_edit' loc.pk %}" class="btn btn-sm btn-outline-primary">Изменить</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-muted text-center py-3">Кабинеты ещё не добавлены.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
