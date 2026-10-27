@@ -1,6 +1,6 @@
-# Helpes — Внутренняя система технических заявок («Кыргыз Алтын»)
+# Help Desk — Внутренняя система технических заявок («Кыргыз Алтын»)
 
-**Helpes** — адаптивное веб-приложение для быстрой регистрации неисправностей оборудования сотрудниками и обработки заявок технической службой компании «Кыргыз Алтын».
+**Help Desk** — адаптивное веб-приложение для быстрой регистрации неисправностей оборудования сотрудниками и обработки заявок технической службой компании «Кыргыз Алтын».
 
 ## 1. Назначение и архитектура
 
@@ -63,3 +63,20 @@ sqlite3 db.sqlite3 ".backup 'backup_helpes_$(date +%F).sqlite3'"
 ```bash
 pytest
 ```
+
+## Docker Compose (Help Desk)
+
+Для локального запуска через Docker понадобятся Docker Engine и Docker Compose Plugin.
+
+```bash
+cp .env.example .env
+# Перед запуском проверьте .env. Для AWS замените секретный ключ, пароль БД и разрешённые хосты.
+docker compose config
+docker compose up -d --build
+docker compose ps
+docker compose logs -f web
+```
+
+Откройте `http://localhost/`. Создание администратора: `docker compose exec web python manage.py createsuperuser`.
+
+PostgreSQL доступен только во внутренней сети Docker, порт `5432` наружу не публикуется. Перед реальным использованием на AWS настройте HTTPS и только затем установите `DJANGO_SECURE_COOKIES=True`. Подробная инструкция: `DEPLOY_AWS_EC2.md`.

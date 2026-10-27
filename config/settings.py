@@ -1,5 +1,5 @@
 """
-Конфигурация Django-проекта Helpes (внутренняя система технических заявок).
+Конфигурация Django-проекта Help Desk (внутренняя система технических заявок).
 Все чувствительные параметры и подключения считываются из переменных окружения.
 """
 import os
@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Внутренние модули Helpes
+    # Внутренние модули Help Desk
     "apps.accounts.apps.AccountsConfig",
     "apps.locations.apps.LocationsConfig",
     "apps.tickets.apps.TicketsConfig",
@@ -140,9 +140,15 @@ X_FRAME_OPTIONS = "DENY"
 if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_BROWSER_XSS_FILTER = True
+    # Nginx forwards the original protocol; enable secure cookies after HTTPS is configured.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True
+    SECURE_COOKIES = os.environ.get("DJANGO_SECURE_COOKIES", "False").strip().lower() in ("true", "1", "yes")
+    SESSION_COOKIE_SECURE = SECURE_COOKIES
+    CSRF_COOKIE_SECURE = SECURE_COOKIES
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Параметры бизнес-логики Helpes
+# Параметры бизнес-логики Help Desk
 STALE_TICKET_HOURS = int(os.environ.get("STALE_TICKET_HOURS", "24"))
 PUBLIC_FORM_RATE_LIMIT = int(os.environ.get("PUBLIC_FORM_RATE_LIMIT", "5"))

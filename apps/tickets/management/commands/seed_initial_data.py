@@ -1,4 +1,4 @@
-"""Команда начального заполнения стандартных категорий оборудования Helpes."""
+"""Команда начального заполнения стандартных категорий оборудования Help Desk."""
 from django.core.management.base import BaseCommand
 from apps.tickets.models import EquipmentCategory
 
@@ -14,7 +14,7 @@ DEFAULT_CATEGORIES = [
 
 
 class Command(BaseCommand):
-    help = "Заполняет базу данных начальным списком категорий оборудования Helpes"
+    help = "Заполняет базу данных начальным списком категорий оборудования Help Desk"
 
     def handle(self, *args, **options):
         created_count = 0
