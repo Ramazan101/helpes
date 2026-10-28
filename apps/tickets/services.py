@@ -38,8 +38,6 @@ def create_public_ticket(
             raise ValidationError("Количество оборудования должно быть целым числом не меньше 1.")
         aggregated[category] = aggregated.get(category, 0) + int(quantity)
 
-    if not aggregated:
-        raise ValidationError("Необходимо указать хотя бы одну позицию оборудования.")
 
     with transaction.atomic():
         temp_number = f"TMP-{uuid.uuid4().hex[:12].upper()}"

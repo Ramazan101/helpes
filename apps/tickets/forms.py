@@ -1,4 +1,4 @@
-"""Формы подачи заявки сотрудником, обработки техником и управления администратором."""
+"""╨д╨╛╤А╨╝╤Л ╨┐╨╛╨┤╨░╤З╨╕ ╨╖╨░╤П╨▓╨║╨╕ ╤Б╨╛╤В╤А╤Г╨┤╨╜╨╕╨║╨╛╨╝, ╨╛╨▒╤А╨░╨▒╨╛╤В╨║╨╕ ╤В╨╡╤Е╨╜╨╕╨║╨╛╨╝ ╨╕ ╤Г╨┐╤А╨░╨▓╨╗╨╡╨╜╨╕╤П ╨░╨┤╨╝╨╕╨╜╨╕╤Б╤В╤А╨░╤В╨╛╤А╨╛╨╝."""
 from django import forms
 from django.forms import BaseFormSet, formset_factory
 
@@ -9,89 +9,50 @@ from .models import EquipmentCategory, Ticket
 
 class PublicTicketForm(forms.Form):
     employee_name = forms.CharField(
-        label="Ваше имя и фамилия (или должность)",
+        label="Ваше имя и фамилия",
         max_length=150,
-        widget=forms.TextInput(
-            attrs={"class": "form-control form-control-lg", "placeholder": "Например: Асанов Бакыт"}
-        ),
-    )
-    location = forms.ModelChoiceField(
-        label="Этаж и кабинет",
-        queryset=Location.objects.none(),
-        required=False,
-        empty_label="— Выберите кабинет из списка —",
-        widget=forms.Select(attrs={"class": "form-select form-select-lg"}),
+        widget=forms.TextInput(attrs={
+            "class": "form-control form-control-lg",
+            "placeholder": "Например: Асанов Бакыт",
+        }),
     )
     custom_location = forms.CharField(
-        label="Или укажите местоположение текстом (если кабинета нет в списке)",
+        label="Где сломалось?",
         max_length=255,
-        required=False,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Например: 3 этаж, переговорная у лифта",
-            }
-        ),
+        widget=forms.TextInput(attrs={
+            "class": "form-control form-control-lg",
+            "placeholder": "Например: 3-й этаж, кабинет 12",
+        }),
     )
     short_description = forms.CharField(
-        label="Краткое описание неисправности (что именно не работает)",
+        label="Что случилось?",
         max_length=255,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control form-control-lg",
-                "placeholder": "Например: Не печатает сетевой принтер и не включается монитор",
-            }
-        ),
+        widget=forms.Textarea(attrs={
+            "class": "form-control form-control-lg",
+            "rows": 4,
+            "placeholder": "Опишите неисправность",
+        }),
     )
-    detailed_description = forms.CharField(
-        label="Подробности (необязательно)",
+    website_honeypot = forms.CharField(
         required=False,
-        widget=forms.Textarea(
-            attrs={
-                "class": "form-control",
-                "rows": 3,
-                "placeholder": "Как проявляется проблема и при каких обстоятельствах возникла",
-            }
-        ),
+        widget=forms.HiddenInput,
     )
-    website_honeypot = forms.CharField(required=False, widget=forms.HiddenInput)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["location"].queryset = (
-            Location.objects.filter(is_active=True, floor__is_active=True)
-            .exclude(floor__building__is_active=False)
-            .select_related("floor", "floor__building")
-        )
-        self.fields["location"].label_from_instance = lambda obj: obj.full_title
 
     def clean_website_honeypot(self):
-        val = self.cleaned_data.get("website_honeypot")
-        if val:
-            raise forms.ValidationError("Обнаружена автоматическая отправка формы.")
-        return val
-
-    def clean(self):
-        cleaned = super().clean()
-        loc = cleaned.get("location")
-        custom_loc = (cleaned.get("custom_location") or "").strip()
-        if not loc and not custom_loc:
-            self.add_error(
-                "location",
-                "Пожалуйста, выберите кабинет из списка или укажите местоположение вручную в поле ниже.",
-            )
-        return cleaned
-
+        value = self.cleaned_data.get("website_honeypot")
+        if value:
+            raise forms.ValidationError("Не удалось отправить заявку.")
+        return value
 
 class TicketItemRowForm(forms.Form):
     category = forms.ModelChoiceField(
-        label="Тип оборудования / неисправности",
+        label="╨в╨╕╨┐ ╨╛╨▒╨╛╤А╤Г╨┤╨╛╨▓╨░╨╜╨╕╤П / ╨╜╨╡╨╕╤Б╨┐╤А╨░╨▓╨╜╨╛╤Б╤В╨╕",
         queryset=EquipmentCategory.objects.none(),
-        empty_label="— Выберите тип оборудования —",
+        empty_label="тАФ ╨Т╤Л╨▒╨╡╤А╨╕╤В╨╡ ╤В╨╕╨┐ ╨╛╨▒╨╛╤А╤Г╨┤╨╛╨▓╨░╨╜╨╕╤П тАФ",
         widget=forms.Select(attrs={"class": "form-select"}),
     )
     quantity = forms.IntegerField(
-        label="Количество",
+        label="╨Ъ╨╛╨╗╨╕╤З╨╡╤Б╤В╨▓╨╛",
         min_value=1,
         initial=1,
         widget=forms.NumberInput(attrs={"class": "form-control", "min": "1"}),
@@ -100,6 +61,30 @@ class TicketItemRowForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["category"].queryset = EquipmentCategory.objects.filter(is_active=True)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        category = cleaned_data.get("category")
+        quantity = cleaned_data.get("quantity")
+
+        category_raw = self.data.get(self.add_prefix("category"), "").strip()
+        quantity_raw = self.data.get(self.add_prefix("quantity"), "").strip()
+
+        if not category_raw and not quantity_raw:
+            self._errors.pop("category", None)
+            self._errors.pop("quantity", None)
+            cleaned_data["category"] = None
+            cleaned_data["quantity"] = None
+            self.cleaned_data = cleaned_data
+            return cleaned_data
+
+        if not category:
+            self.add_error("category", "???????? ??? ????????????.")
+
+        if quantity is None:
+            self.add_error("quantity", "??????? ??????????.")
+
+        return self.cleaned_data
 
 
 class RequiredTicketItemFormSet(BaseFormSet):
@@ -114,10 +99,8 @@ class RequiredTicketItemFormSet(BaseFormSet):
             quantity = form.cleaned_data.get("quantity")
             if category and quantity is not None:
                 if quantity < 1:
-                    raise forms.ValidationError("Количество устройств должно быть не меньше 1.")
+                    raise forms.ValidationError("╨Ъ╨╛╨╗╨╕╤З╨╡╤Б╤В╨▓╨╛ ╤Г╤Б╤В╤А╨╛╨╣╤Б╤В╨▓ ╨┤╨╛╨╗╨╢╨╜╨╛ ╨▒╤Л╤В╤М ╨╜╨╡ ╨╝╨╡╨╜╤М╤И╨╡ 1.")
                 valid_rows += 1
-        if valid_rows == 0:
-            raise forms.ValidationError("Добавьте хотя бы одну позицию оборудования с количеством не меньше 1.")
 
 
 TicketItemFormSet = formset_factory(
@@ -125,28 +108,28 @@ TicketItemFormSet = formset_factory(
     formset=RequiredTicketItemFormSet,
     extra=1,
     can_delete=True,
-    min_num=1,
-    validate_min=True,
+    min_num=0,
+    validate_min=False,
 )
 
 
 class TechStatusUpdateForm(forms.Form):
     status = forms.ChoiceField(
-        label="Новый статус",
+        label="╨Э╨╛╨▓╤Л╨╣ ╤Б╤В╨░╤В╤Г╤Б",
         choices=[
-            (Ticket.Status.IN_PROGRESS, "В работе"),
-            (Ticket.Status.WAITING, "Ожидает (требуется уточнение / запчасти)"),
-            (Ticket.Status.DONE, "Выполнена"),
+            (Ticket.Status.IN_PROGRESS, "╨Т ╤А╨░╨▒╨╛╤В╨╡"),
+            (Ticket.Status.WAITING, "╨Ю╨╢╨╕╨┤╨░╨╡╤В (╤В╤А╨╡╨▒╤Г╨╡╤В╤Б╤П ╤Г╤В╨╛╤З╨╜╨╡╨╜╨╕╨╡ / ╨╖╨░╨┐╤З╨░╤Б╤В╨╕)"),
+            (Ticket.Status.DONE, "╨Т╤Л╨┐╨╛╨╗╨╜╨╡╨╜╨░"),
         ],
         widget=forms.Select(attrs={"class": "form-select"}),
     )
     resolution_summary = forms.CharField(
-        label="Выполненные действия и результат ремонта (обязательно для статуса «Выполнена»)",
+        label="╨Т╤Л╨┐╨╛╨╗╨╜╨╡╨╜╨╜╤Л╨╡ ╨┤╨╡╨╣╤Б╤В╨▓╨╕╤П ╨╕ ╤А╨╡╨╖╤Г╨╗╤М╤В╨░╤В ╤А╨╡╨╝╨╛╨╜╤В╨░ (╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╨╛ ╨┤╨╗╤П ╤Б╤В╨░╤В╤Г╤Б╨░ ┬л╨Т╤Л╨┐╨╛╨╗╨╜╨╡╨╜╨░┬╗)",
         required=False,
         widget=forms.Textarea(attrs={"class": "form-control", "rows": 3}),
     )
     comment_text = forms.CharField(
-        label="Комментарий о ходе диагностики (обязательно для статуса «Ожидает»)",
+        label="╨Ъ╨╛╨╝╨╝╨╡╨╜╤В╨░╤А╨╕╨╣ ╨╛ ╤Е╨╛╨┤╨╡ ╨┤╨╕╨░╨│╨╜╨╛╤Б╤В╨╕╨║╨╕ (╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╨╛ ╨┤╨╗╤П ╤Б╤В╨░╤В╤Г╤Б╨░ ┬л╨Ю╨╢╨╕╨┤╨░╨╡╤В┬╗)",
         required=False,
         widget=forms.Textarea(attrs={"class": "form-control", "rows": 2}),
     )
@@ -154,29 +137,29 @@ class TechStatusUpdateForm(forms.Form):
 
 class TicketCommentForm(forms.Form):
     body = forms.CharField(
-        label="Комментарий о ходе диагностики",
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 2, "placeholder": "Опишите ход проверки или уточнения..."}),
+        label="╨Ъ╨╛╨╝╨╝╨╡╨╜╤В╨░╤А╨╕╨╣ ╨╛ ╤Е╨╛╨┤╨╡ ╨┤╨╕╨░╨│╨╜╨╛╤Б╤В╨╕╨║╨╕",
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 2, "placeholder": "╨Ю╨┐╨╕╤И╨╕╤В╨╡ ╤Е╨╛╨┤ ╨┐╤А╨╛╨▓╨╡╤А╨║╨╕ ╨╕╨╗╨╕ ╤Г╤В╨╛╤З╨╜╨╡╨╜╨╕╤П..."}),
     )
 
 
 class ReturnToQueueForm(forms.Form):
     reason = forms.CharField(
-        label="Причина возврата в общую очередь",
+        label="╨Я╤А╨╕╤З╨╕╨╜╨░ ╨▓╨╛╨╖╨▓╤А╨░╤В╨░ ╨▓ ╨╛╨▒╤Й╤Г╤О ╨╛╤З╨╡╤А╨╡╨┤╤М",
         max_length=255,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Например: Требуется выезд сетевого администратора"}),
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "╨Э╨░╨┐╤А╨╕╨╝╨╡╤А: ╨в╤А╨╡╨▒╤Г╨╡╤В╤Б╤П ╨▓╤Л╨╡╨╖╨┤ ╤Б╨╡╤В╨╡╨▓╨╛╨│╨╛ ╨░╨┤╨╝╨╕╨╜╨╕╤Б╤В╤А╨░╤В╨╛╤А╨░"}),
     )
 
 
 class AdminAssignTicketForm(forms.Form):
     assigned_to = forms.ModelChoiceField(
-        label="Назначить специалиста (оставьте пустым для возврата в очередь)",
+        label="╨Э╨░╨╖╨╜╨░╤З╨╕╤В╤М ╤Б╨┐╨╡╤Ж╨╕╨░╨╗╨╕╤Б╤В╨░ (╨╛╤Б╤В╨░╨▓╤М╤В╨╡ ╨┐╤Г╤Б╤В╤Л╨╝ ╨┤╨╗╤П ╨▓╨╛╨╖╨▓╤А╨░╤В╨░ ╨▓ ╨╛╤З╨╡╤А╨╡╨┤╤М)",
         queryset=User.objects.none(),
         required=False,
-        empty_label="— Без исполнителя (вернуть в общую очередь) —",
+        empty_label="тАФ ╨С╨╡╨╖ ╨╕╤Б╨┐╨╛╨╗╨╜╨╕╤В╨╡╨╗╤П (╨▓╨╡╤А╨╜╤Г╤В╤М ╨▓ ╨╛╨▒╤Й╤Г╤О ╨╛╤З╨╡╤А╨╡╨┤╤М) тАФ",
         widget=forms.Select(attrs={"class": "form-select"}),
     )
     note = forms.CharField(
-        label="Примечание к назначению (необязательно)",
+        label="╨Я╤А╨╕╨╝╨╡╤З╨░╨╜╨╕╨╡ ╨║ ╨╜╨░╨╖╨╜╨░╤З╨╡╨╜╨╕╤О (╨╜╨╡╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╨╛)",
         max_length=255,
         required=False,
         widget=forms.TextInput(attrs={"class": "form-control"}),
@@ -191,15 +174,15 @@ class AdminAssignTicketForm(forms.Form):
 
 class AdminReopenTicketForm(forms.Form):
     reason = forms.CharField(
-        label="Причина повторного открытия заявки",
+        label="╨Я╤А╨╕╤З╨╕╨╜╨░ ╨┐╨╛╨▓╤В╨╛╤А╨╜╨╛╨│╨╛ ╨╛╤В╨║╤А╤Л╤В╨╕╤П ╨╖╨░╤П╨▓╨║╨╕",
         max_length=255,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Проблема проявилась повторно"}),
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "╨Я╤А╨╛╨▒╨╗╨╡╨╝╨░ ╨┐╤А╨╛╤П╨▓╨╕╨╗╨░╤Б╤М ╨┐╨╛╨▓╤В╨╛╤А╨╜╨╛"}),
     )
     assigned_to = forms.ModelChoiceField(
-        label="Исполнитель (необязательно)",
+        label="╨Ш╤Б╨┐╨╛╨╗╨╜╨╕╤В╨╡╨╗╤М (╨╜╨╡╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╨╛)",
         queryset=User.objects.none(),
         required=False,
-        empty_label="— В общую очередь —",
+        empty_label="тАФ ╨Т ╨╛╨▒╤Й╤Г╤О ╨╛╤З╨╡╤А╨╡╨┤╤М тАФ",
         widget=forms.Select(attrs={"class": "form-select"}),
     )
 
@@ -215,8 +198,8 @@ class EquipmentCategoryForm(forms.ModelForm):
         model = EquipmentCategory
         fields = ["name", "description", "sort_order", "is_active"]
         widgets = {
-            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Например: МФУ или плоттер"}),
-            "description": forms.TextInput(attrs={"class": "form-control", "placeholder": "Пояснение для сотрудников"}),
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "╨Э╨░╨┐╤А╨╕╨╝╨╡╤А: ╨Ь╨д╨г ╨╕╨╗╨╕ ╨┐╨╗╨╛╤В╤В╨╡╤А"}),
+            "description": forms.TextInput(attrs={"class": "form-control", "placeholder": "╨Я╨╛╤П╤Б╨╜╨╡╨╜╨╕╨╡ ╨┤╨╗╤П ╤Б╨╛╤В╤А╤Г╨┤╨╜╨╕╨║╨╛╨▓"}),
             "sort_order": forms.NumberInput(attrs={"class": "form-control"}),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }

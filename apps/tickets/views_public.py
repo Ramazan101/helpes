@@ -39,10 +39,10 @@ def public_ticket_create(request):
             try:
                 ticket = create_public_ticket(
                     employee_name=form.cleaned_data["employee_name"],
-                    location=form.cleaned_data["location"],
+                    location=None,
                     custom_location=form.cleaned_data["custom_location"],
                     short_description=form.cleaned_data["short_description"],
-                    detailed_description=form.cleaned_data["detailed_description"],
+                    detailed_description="",
                     items_data=formset.cleaned_data,
                 )
                 submitted = list(request.session.get("submitted_tickets", []))
