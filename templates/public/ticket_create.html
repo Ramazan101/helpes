@@ -1,41 +1,45 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Подать заявку в техподдержку — Help Desk{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-12 col-lg-8">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <h1 class="h3 fw-bold mb-2">Заявка в техническую службу</h1>
-                <p class="text-muted mb-4">
-                    Укажите ваше имя, кабинет и неисправное оборудование. Регистрация и пароль не требуются.
-                </p>
+        <div class="hd-card">
+            <div class="hd-card-body p-4 p-md-5">
+                <div class="mb-4">
+                    <h1 class="h3 fw-bold mb-2">Заявка в техническую службу</h1>
+                    <p class="text-muted mb-0">
+                        Укажите ваше имя, кабинет и неисправное оборудование. Регистрация и пароль не требуются.
+                    </p>
+                </div>
 
                 <form method="post" novalidate id="publicTicketForm">
                     {% csrf_token %}
                     {{ form.website_honeypot }}
 
                     {% if form.non_field_errors or formset.non_form_errors %}
-                        <div class="alert alert-danger">
+                        <div class="alert alert-danger mb-4" role="alert">
                             {{ form.non_field_errors }}
                             {{ formset.non_form_errors }}
                         </div>
                     {% endif %}
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold" for="{{ form.employee_name.id_for_label }}">
-                            {{ form.employee_name.label }} <span class="text-danger">*</span>
-                        </label>
-                        {{ form.employee_name }}
-                        {% if form.employee_name.errors %}
-                            <div class="text-danger small mt-1">{{ form.employee_name.errors|join:", " }}</div>
-                        {% endif %}
-                    </div>
+                    <!-- Секция 1: Данные сотрудника и местоположение -->
+                    <div class="mb-4 pb-2 border-bottom">
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.employee_name.id_for_label }}">
+                                {{ form.employee_name.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.employee_name }}
+                            {% if form.employee_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.employee_name.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
 
-                    <div class="card bg-light border-0 p-3 mb-4">
-                        <div class="row g-3">
+                        <div class="row g-3 mb-2">
                             <div class="col-12 col-md-7">
-                                <label class="form-label fw-semibold" for="{{ form.location.id_for_label }}">
+                                <label class="form-label" for="{{ form.location.id_for_label }}">
                                     {{ form.location.label }} <span class="text-danger">*</span>
                                 </label>
                                 {{ form.location }}
@@ -44,7 +48,7 @@
                                 {% endif %}
                             </div>
                             <div class="col-12 col-md-5">
-                                <label class="form-label fw-semibold" for="{{ form.custom_location.id_for_label }}">
+                                <label class="form-label" for="{{ form.custom_location.id_for_label }}">
                                     {{ form.custom_location.label }}
                                 </label>
                                 {{ form.custom_location }}
@@ -56,17 +60,22 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
+                    <!-- Секция 2: Затронутое оборудование -->
+                    <div class="mb-4 pb-2 border-bottom">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                            <label class="form-label fw-semibold mb-0">
-                                Затронутое оборудование и количество устройств <span class="text-danger">*</span>
-                            </label>
+                            <div>
+                                <label class="form-label mb-0">
+                                    Затронутое оборудование и количество устройств <span class="text-danger">*</span>
+                                </label>
+                                <div class="form-text mb-0">Можно указать несколько позиций (например: Компьютеры — 3, Принтеры — 1).</div>
+                            </div>
                             <button type="button" class="btn btn-outline-primary btn-sm" id="addEquipmentRowBtn">
-                                + Добавить ещё оборудование
+                                + Добавить оборудование
                             </button>
                         </div>
+
                         {{ formset.management_form }}
-                        <div id="equipmentRowsContainer">
+                        <div id="equipmentRowsContainer" class="mt-3">
                             {% for item_form in formset %}
                                 <div class="row g-2 align-items-start mb-2 equipment-row">
                                     <div class="col-7 col-sm-8">
@@ -82,35 +91,37 @@
                                         {% endif %}
                                     </div>
                                     <div class="col-2 col-sm-2 d-grid">
-                                        <button type="button" class="btn btn-outline-danger remove-equipment-row-btn" title="Удалить строку">
+                                        <button type="button" class="btn btn-outline-danger remove-equipment-row-btn" title="Удалить строку" aria-label="Удалить строку">
                                             ×
                                         </button>
                                     </div>
                                 </div>
                             {% endfor %}
                         </div>
-                        <div class="form-text">Можно указать несколько позиций (например: Компьютеры — 3, Принтеры — 1).</div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold" for="{{ form.short_description.id_for_label }}">
-                            {{ form.short_description.label }} <span class="text-danger">*</span>
-                        </label>
-                        {{ form.short_description }}
-                        {% if form.short_description.errors %}
-                            <div class="text-danger small mt-1">{{ form.short_description.errors|join:", " }}</div>
-                        {% endif %}
-                    </div>
-
+                    <!-- Секция 3: Суть неисправности -->
                     <div class="mb-4">
-                        <label class="form-label fw-semibold" for="{{ form.detailed_description.id_for_label }}">
-                            {{ form.detailed_description.label }}
-                        </label>
-                        {{ form.detailed_description }}
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.short_description.id_for_label }}">
+                                {{ form.short_description.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.short_description }}
+                            {% if form.short_description.errors %}
+                                <div class="text-danger small mt-1">{{ form.short_description.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.detailed_description.id_for_label }}">
+                                {{ form.detailed_description.label }}
+                            </label>
+                            {{ form.detailed_description }}
+                        </div>
                     </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+                    <div class="pt-2">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold">
                             Отправить заявку в техслужбу
                         </button>
                     </div>
@@ -120,6 +131,8 @@
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script src="{% static 'js/formset.js' %}"></script>
+{% include "assistant/includes/widget.html" %}
 {% endblock %}

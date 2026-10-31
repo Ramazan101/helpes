@@ -213,3 +213,26 @@ class TicketHistory(models.Model):
 
     def __str__(self) -> str:
         return f"{self.ticket.ticket_number}: {self.get_action_display()}"
+
+
+class WebPushSubscription(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="web_push_subscriptions",
+        verbose_name="Пользователь",
+    )
+    endpoint = models.URLField("Push Endpoint", max_length=1000, unique=True, db_index=True)
+    p256dh = models.CharField("Ключ p256dh", max_length=255)
+    auth = models.CharField("Ключ auth", max_length=255)
+    user_agent = models.CharField("User-Agent устройства", max_length=255, blank=True, default="")
+    created_at = models.DateTimeField("Создана", auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField("Обновлена", auto_now=True)
+
+    class Meta:
+        verbose_name = "Подписка Web Push"
+        verbose_name_plural = "Подписки Web Push"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"PushSubscription({self.user.username}, {self.endpoint[:40]}...)"

@@ -1,0 +1,168 @@
+/* ==========================================================================
+   Help Desk «Кыргыз Алтын» — Стили плавающего десктопного виджета (Tauri)
+   ========================================================================== */
+
+:root {
+  --hd-navy: #1e293b;
+  --hd-navy-dark: #0f172a;
+  --hd-blue: #1d4ed8;
+  --hd-bg: #f8fafc;
+  --hd-border: #cbd5e1;
+  --hd-text-main: #0f172a;
+  --hd-text-muted: #64748b;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--hd-bg);
+  color: var(--hd-text-main);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.widget-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--hd-border);
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+/* Кастомная панель управления окном */
+.widget-titlebar {
+  height: 38px;
+  background-color: var(--hd-navy);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 12px;
+  flex-shrink: 0;
+  cursor: grab;
+}
+
+.widget-titlebar:active {
+  cursor: grabbing;
+}
+
+.widget-drag-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  height: 100%;
+}
+
+.widget-app-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f8fafc;
+  letter-spacing: 0.01em;
+}
+
+.widget-window-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.widget-action-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+}
+
+.widget-action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.widget-action-btn.pin-active {
+  color: #38bdf8;
+  background-color: rgba(56, 189, 248, 0.2);
+}
+
+.widget-action-btn.btn-close:hover {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+/* Контейнер фрейма */
+.widget-content-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  display: block;
+}
+
+/* Оффлайн памятка */
+.widget-offline-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow-y: auto;
+  background-color: #f8fafc;
+}
+
+.offline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background-color: #fee2e2;
+  color: #991b1b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.offline-memo-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.offline-memo-title {
+  font-weight: 600;
+  color: var(--hd-navy);
+  margin-bottom: 4px;
+}
+
+.btn-retry {
+  background-color: var(--hd-blue);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.15s ease;
+}
+
+.btn-retry:hover {
+  background-color: #1e40af;
+}

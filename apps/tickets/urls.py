@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views_admin, views_public, views_tech
+from . import views_admin, views_public, views_tech, views_tech_api
 
 app_name = "tickets"
 
@@ -14,6 +14,11 @@ urlpatterns = [
     path("tech/tickets/<str:ticket_number>/status/", views_tech.tech_update_status, name="tech_update_status"),
     path("tech/tickets/<str:ticket_number>/comment/", views_tech.tech_add_comment, name="tech_add_comment"),
     path("tech/tickets/<str:ticket_number>/return/", views_tech.tech_return_to_queue, name="tech_return_to_queue"),
+    # 2.1 API технической очереди и Web Push уведомлений
+    path("tech/api/queue/summary/", views_tech_api.queue_summary_api, name="tech_api_queue_summary"),
+    path("tech/api/push/vapid-key/", views_tech_api.push_vapid_key_api, name="tech_api_push_vapid_key"),
+    path("tech/api/push/subscribe/", views_tech_api.push_subscribe_api, name="tech_api_push_subscribe"),
+    path("tech/api/push/unsubscribe/", views_tech_api.push_unsubscribe_api, name="tech_api_push_unsubscribe"),
     # 3. Интерфейс администратора
     path("manage/tickets/", views_admin.admin_ticket_list, name="admin_ticket_list"),
     path("manage/tickets/<str:ticket_number>/", views_admin.admin_ticket_detail, name="admin_ticket_detail"),

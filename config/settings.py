@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Загрузка переменных из файла .env, если он присутствует
-load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR / ".env", override=True)
 
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "apps.accounts.apps.AccountsConfig",
     "apps.locations.apps.LocationsConfig",
     "apps.tickets.apps.TicketsConfig",
+    "apps.assistant.apps.AssistantConfig",
 ]
 
 MIDDLEWARE = [
@@ -152,3 +153,35 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Параметры бизнес-логики Help Desk
 STALE_TICKET_HOURS = int(os.environ.get("STALE_TICKET_HOURS", "24"))
 PUBLIC_FORM_RATE_LIMIT = int(os.environ.get("PUBLIC_FORM_RATE_LIMIT", "5"))
+
+# Параметры AI-помощника (Helpes Self-Service Assistant)
+AI_API_KEY = (
+    os.environ.get("AI_API_KEY", "").strip()
+    or os.environ.get("OPENAI_API_KEY", "").strip()
+)
+AI_BASE_URL = os.environ.get("AI_BASE_URL", "https://openrouter.ai/api/v1").strip() or "https://openrouter.ai/api/v1"
+AI_MODEL = os.environ.get("AI_MODEL", "openrouter/free").strip() or "openrouter/free"
+AI_ASSISTANT_TIMEOUT = float(os.environ.get("AI_ASSISTANT_TIMEOUT", "15"))
+AI_ASSISTANT_MAX_TOKENS = int(os.environ.get("AI_ASSISTANT_MAX_TOKENS", "700"))
+AI_ASSISTANT_MAX_MESSAGE_LENGTH = int(os.environ.get("AI_ASSISTANT_MAX_MESSAGE_LENGTH", "1000"))
+AI_ASSISTANT_MAX_HISTORY = int(os.environ.get("AI_ASSISTANT_MAX_HISTORY", "6"))
+AI_ASSISTANT_RATE_LIMIT = int(os.environ.get("AI_ASSISTANT_RATE_LIMIT", "15"))
+
+_raw_assistant_enabled = os.environ.get("AI_ASSISTANT_ENABLED")
+if _raw_assistant_enabled is None or _raw_assistant_enabled.strip() == "":
+    AI_ASSISTANT_ENABLED = bool(AI_API_KEY)
+else:
+    AI_ASSISTANT_ENABLED = _raw_assistant_enabled.strip().lower() in (
+        "true",
+        "1",
+        "yes",
+    )
+
+# Алиасы для обратной совместимости
+OPENAI_API_KEY = AI_API_KEY
+OPENAI_MODEL = AI_MODEL
+
+# Настройки Web Push (VAPID)
+PUSH_VAPID_PUBLIC_KEY = os.environ.get("PUSH_VAPID_PUBLIC_KEY", "").strip()
+PUSH_VAPID_PRIVATE_KEY = os.environ.get("PUSH_VAPID_PRIVATE_KEY", "").strip()
+PUSH_VAPID_CLAIMS_EMAIL = os.environ.get("PUSH_VAPID_CLAIMS_EMAIL", "mailto:admin@kyrgyzaltyn.kg").strip()

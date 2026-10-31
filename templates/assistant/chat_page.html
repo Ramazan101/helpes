@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ИТ-помощник Helpes — Кыргыз Алтын{% endblock %}
+
+{% block content %}
+<div class="assistant-desktop-wrapper py-1">
+  <div class="row g-4 align-items-stretch">
+    <!-- Левая колонка: быстрые сценарии и переход к заявке -->
+    <div class="col-12 col-lg-4 d-flex flex-column gap-3">
+      <div class="hd-card h-100">
+        <div class="hd-card-body p-4 d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge {% if ai_configured %}status-badge-DONE{% else %}status-badge-WAITING{% endif %}">
+                {% if ai_configured %}ИИ-консультант онлайн{% else %}Режим справочника (ИИ не подключён){% endif %}
+              </span>
+              <span class="text-muted small">RU / KY</span>
+            </div>
+
+            <h1 class="h4 fw-bold mb-2">ИТ-помощник</h1>
+            <p class="text-muted small mb-4">
+              Опишите проблему на русском или кыргызском языке. Помощник предложит безопасные шаги проверки оборудования перед оформлением заявки.
+            </p>
+
+            <h2 class="h6 fw-semibold text-uppercase text-secondary small mb-2">Частые вопросы</h2>
+            <div class="d-flex flex-wrap gap-2 mb-4" role="group" aria-label="Быстрые вопросы помощнику">
+              {% for item in quick_prompts %}
+                <button
+                  type="button"
+                  class="btn assistant-quick-btn"
+                  data-assistant-prompt="{{ item.prompt }}"
+                >
+                  {{ item.label }}
+                </button>
+              {% endfor %}
+            </div>
+
+            <div class="alert alert-info py-2 px-3 small mb-3" role="note">
+              <strong>Безопасность:</strong> Помощник никогда не запрашивает пароли и не выполняет изменения в корпоративной сети.
+            </div>
+          </div>
+
+          <div class="border-top pt-3 mt-2">
+            <p class="small text-muted mb-2">
+              Не удалось решить проблему самостоятельно?
+            </p>
+            <a href="{% url 'tickets:public_create' %}" class="btn btn-primary w-100 fw-semibold">
+              Подать заявку дежурному технику →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Правая колонка: основное окно диалога -->
+    <div class="col-12 col-lg-8">
+      <div
+        class="assistant-chat-card"
+        data-assistant-container
+        data-api-url="{% url 'assistant:chat_api' %}"
+        data-ticket-url="{% url 'tickets:public_create' %}"
+        data-max-length="{{ max_message_length }}"
+      >
+        <div class="hd-card-header bg-white d-flex justify-content-between align-items-center">
+          <div>
+            <span class="d-block fw-semibold">Диалог с помощником</span>
+            <span class="text-muted small">Консультация по ПК, принтерам, сети и программам</span>
+          </div>
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            data-assistant-clear
+            title="Очистить историю диалога"
+          >
+            Очистить чат
+          </button>
+        </div>
+
+        <div
+          class="assistant-messages-box"
+          data-assistant-messages
+          role="log"
+          aria-live="polite"
+          aria-label="Сообщения чата"
+        >
+          <div class="assistant-msg assistant-msg-bot">
+            <div class="assistant-msg-bubble">
+              Здравствуйте! Саламатсызбы! Я помогу проверить частые неполадки оборудования (принтер, интернет, монитор, компьютер). Выберите быструю подсказку слева или напишите, что случилось.
+            </div>
+          </div>
+        </div>
+
+        <!-- Блок рекомендации создать заявку -->
+        <div class="px-3 px-md-4 py-2 bg-light border-top d-none" data-assistant-escalation>
+          <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2">
+            <span class="small fw-semibold text-dark">
+              Нужен мастер на рабочее место?
+            </span>
+            <a href="{% url 'tickets:public_create' %}" class="btn btn-sm btn-primary">
+              Оформить заявку в Help Desk →
+            </a>
+          </div>
+        </div>
+
+        <!-- Строка ошибки и повторного запроса -->
+        <div class="px-3 px-md-4 py-2 alert-danger border-top d-none" data-assistant-error-bar role="alert">
+          <div class="d-flex align-items-center justify-content-between gap-2">
+            <span class="small" data-assistant-error-text>Ошибка соединения.</span>
+            <button type="button" class="btn btn-sm btn-outline-danger" data-assistant-retry>
+              Повторить запрос
+            </button>
+          </div>
+        </div>
+
+        <div class="hd-card-footer bg-white border-top p-3 px-md-4">
+          <form data-assistant-form novalidate>
+            {% csrf_token %}
+            <label for="assistant-page-input" class="visually-hidden">Ваш вопрос ИТ-помощнику</label>
+            <div class="input-group">
+              <textarea
+                id="assistant-page-input"
+                class="form-control assistant-input"
+                rows="2"
+                maxlength="{{ max_message_length }}"
+                placeholder="Например: Не печатает принтер в 204 кабинете / Принтер иштебей жатат..."
+                required
+                data-assistant-input
+              ></textarea>
+              <button
+                type="submit"
+                class="btn btn-primary px-3 px-md-4 fw-semibold"
+                data-assistant-submit
+              >
+                Отправить
+              </button>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <small class="text-muted">Enter — отправить, Shift+Enter — перенос строки</small>
+              <small class="text-muted" data-assistant-counter>0 / {{ max_message_length }}</small>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/assistant.js' %}"></script>
+{% endblock %}

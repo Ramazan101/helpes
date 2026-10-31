@@ -1,0 +1,12 @@
+{
+  "name": "helpes-desktop-widget",
+  "version": "1.0.0",
+  "description": "Floating Desktop Widget Help Desk Кыргыз Алтын",
+  "private": true,
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0"
+  }
+}

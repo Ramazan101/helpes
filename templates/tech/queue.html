@@ -1,74 +1,96 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Очередь технических заявок — Help Desk{% endblock %}
+
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-    <h1 class="h3 fw-bold mb-0">Очередь технических заявок</h1>
-    <a href="{% url 'tickets:tech_queue' %}?scope={{ scope }}" class="btn btn-outline-secondary btn-sm">
-        Обновить очередь
+    <div>
+        <h1 class="h3 fw-bold mb-0">Очередь заявок</h1>
+        <p class="text-muted small mb-0">Обработка текущих технических обращений сотрудников</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button id="pwa-push-toggle-btn" type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1" style="display:none;" title="Включить браузерные уведомления">
+            <span id="pwa-push-status-icon">🔔</span>
+            <span id="pwa-push-status-text">Включить уведомления</span>
+        </button>
+        <a href="{% url 'tickets:tech_queue' %}?scope={{ scope }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+            <span>↻</span> Обновить очередь
+        </a>
+    </div>
+</div>
+
+<!-- Вкладки областей очереди -->
+<div class="hd-scope-tabs mb-3" role="tablist">
+    <a href="?scope=available" class="hd-scope-tab {% if scope == 'available' %}active{% endif %}">
+        <span>Доступные и мои</span>
+        <span class="hd-scope-count" id="count-unassigned">{{ counts.unassigned }}</span>
+    </a>
+    <a href="?scope=mine" class="hd-scope-tab {% if scope == 'mine' %}active{% endif %}">
+        <span>Мои в работе</span>
+        <span class="hd-scope-count" id="count-mine">{{ counts.mine }}</span>
+    </a>
+    <a href="?scope=all_open" class="hd-scope-tab {% if scope == 'all_open' %}active{% endif %}">
+        <span>Все открытые</span>
+        <span class="hd-scope-count" id="count-all-open">{{ counts.all_open }}</span>
+    </a>
+    <a href="?scope=done" class="hd-scope-tab {% if scope == 'done' %}active{% endif %}">
+        <span>Выполненные</span>
     </a>
 </div>
 
-<div class="btn-group mb-3 flex-wrap" role="group">
-    <a href="?scope=available" class="btn {% if scope == 'available' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-        Доступные и мои ({{ counts.unassigned }})
-    </a>
-    <a href="?scope=mine" class="btn {% if scope == 'mine' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-        Мои в работе ({{ counts.mine }})
-    </a>
-    <a href="?scope=all_open" class="btn {% if scope == 'all_open' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-        Все открытые ({{ counts.all_open }})
-    </a>
-    <a href="?scope=done" class="btn {% if scope == 'done' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-        Выполненные
-    </a>
-</div>
 
-<form method="get" class="card shadow-sm border-0 p-3 mb-3">
-    <input type="hidden" name="scope" value="{{ scope }}">
-    <div class="row g-2 align-items-center">
-        <div class="col-12 col-md-6">
-            <input type="text" name="q" value="{{ search_q }}" class="form-control"
-                   placeholder="Поиск по номеру HELP-..., имени сотрудника, кабинету или неисправности">
-        </div>
-        <div class="col-7 col-md-3">
-            <select name="status" class="form-select">
-                <option value="">— Все статусы —</option>
-                {% for code, label in status_choices %}
-                    <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-5 col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary w-100">Найти</button>
-            {% if search_q or status_filter %}
-                <a href="?scope={{ scope }}" class="btn btn-outline-secondary">Сброс</a>
-            {% endif %}
+<!-- Фильтрация и поиск -->
+<form method="get" class="hd-card mb-3">
+    <div class="hd-card-body p-3">
+        <input type="hidden" name="scope" value="{{ scope }}">
+        <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-6">
+                <input type="text" name="q" value="{{ search_q }}" class="form-control"
+                       placeholder="Поиск по номеру HELP-..., сотруднику, кабинету или описанию">
+            </div>
+            <div class="col-7 col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">— Все статусы —</option>
+                    {% for code, label in status_choices %}
+                        <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-5 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Найти</button>
+                {% if search_q or status_filter %}
+                    <a href="?scope={{ scope }}" class="btn btn-outline-secondary">Сброс</a>
+                {% endif %}
+            </div>
         </div>
     </div>
 </form>
 
-<div class="card shadow-sm border-0">
+<!-- Таблица очереди -->
+<div class="hd-card">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
+            <thead>
                 <tr>
-                    <th>Номер</th>
-                    <th>Создана</th>
+                    <th style="width: 130px;">Номер</th>
+                    <th style="width: 110px;">Создана</th>
                     <th>Сотрудник и кабинет</th>
                     <th>Оборудование</th>
                     <th>Неисправность</th>
-                    <th>Статус</th>
-                    <th>Исполнитель</th>
-                    <th class="text-end">Действие</th>
+                    <th style="width: 130px;">Статус</th>
+                    <th style="width: 140px;">Исполнитель</th>
+                    <th class="text-end" style="width: 170px;">Действие</th>
                 </tr>
             </thead>
             <tbody>
                 {% for t in tickets %}
                 <tr>
-                    <td class="fw-bold">
-                        <a href="{% url 'tickets:tech_detail' t.ticket_number %}">{{ t.ticket_number }}</a>
+                    <td>
+                        <a href="{% url 'tickets:tech_detail' t.ticket_number %}" class="fw-bold">
+                            {{ t.ticket_number }}
+                        </a>
                         {% if t.is_stale %}
-                            <span class="badge bg-warning text-dark d-block mt-1">Без обновлений &gt;24ч</span>
+                            <span class="badge badge-stale d-block mt-1">&gt;24ч без обновлений</span>
                         {% endif %}
                     </td>
                     <td class="small text-muted">{{ t.created_at|date:"d.m.Y H:i" }}</td>
@@ -79,36 +101,51 @@
                     <td class="small">
                         {% for item in t.items.all %}
                             <div>{{ item.category.name }} — <strong>{{ item.quantity }}</strong></div>
+                        {% empty %}
+                            <span class="text-muted">—</span>
                         {% endfor %}
                     </td>
-                    <td>{{ t.short_description }}</td>
+                    <td>
+                        <span class="text-pre-wrap">{{ t.short_description }}</span>
+                    </td>
                     <td>
                         <span class="badge status-badge-{{ t.status }}">{{ t.get_status_display }}</span>
                     </td>
                     <td>
                         {% if t.assigned_to %}
-                            {{ t.assigned_to.display_name }}
+                            <span class="fw-medium text-dark">{{ t.assigned_to.display_name }}</span>
                         {% else %}
-                            <span class="text-danger fw-semibold">Свободна</span>
+                            <span class="badge status-badge-WAITING">Свободна</span>
                         {% endif %}
                     </td>
                     <td class="text-end">
-                        {% if not t.assigned_to and t.status != 'DONE' %}
-                            <form method="post" action="{% url 'tickets:tech_claim' t.ticket_number %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-success btn-sm">Взять в работу</button>
-                            </form>
-                        {% endif %}
-                        <a href="{% url 'tickets:tech_detail' t.ticket_number %}" class="btn btn-outline-primary btn-sm">Открыть</a>
+                        <div class="d-inline-flex gap-1 justify-content-end">
+                            {% if not t.assigned_to and t.status != 'DONE' %}
+                                <form method="post" action="{% url 'tickets:tech_claim' t.ticket_number %}" class="m-0 d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-sm">В работу</button>
+                                </form>
+                            {% endif %}
+                            <a href="{% url 'tickets:tech_detail' t.ticket_number %}" class="btn btn-outline-primary btn-sm">
+                                Открыть
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">Заявок по выбранному фильтру нет.</td>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <div class="mb-1 fw-semibold">Заявок по выбранному фильтру не найдено</div>
+                        <div class="small">Попробуйте сбросить параметры поиска или переключить вкладку очереди.</div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/notifications.js' %}"></script>
 {% endblock %}
