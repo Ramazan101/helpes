@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Help Desk Кыргыз Алтын",
+  "version": "1.0.0",
+  "identifier": "kg.kyrgyzaltyn.helpdesk.widget",
+  "build": {
+    "frontendDist": "../src"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "security": {
+      "csp": "default-src 'self' tauri: http://127.0.0.1:8000 http://localhost:8000 https:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: tauri: http://127.0.0.1:8000 http://localhost:8000 https:; connect-src 'self' tauri: http://127.0.0.1:8000 http://localhost:8000 https:;"
+    },
+    "windows": [
+      {
+        "label": "main",
+        "title": "Help Desk — ИТ-помощник",
+        "width": 380,
+        "height": 560,
+        "minWidth": 340,
+        "minHeight": 480,
+        "resizable": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "transparent": false,
+        "shadow": true,
+        "center": true
+      }
+    ],
+    "trayIcon": {
+      "iconPath": "icons/icon.png",
+      "tooltip": "Help Desk «Кыргыз Алтын» — Плавающий виджет"
+    }
+  }
+}

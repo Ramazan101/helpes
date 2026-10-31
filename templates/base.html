@@ -5,49 +5,75 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Help Desk — Техническая поддержка «Кыргыз Алтын»{% endblock %}</title>
+    <link rel="manifest" href="{% url 'manifest' %}">
+    <meta name="theme-color" content="#1e293b">
+    <link rel="icon" type="image/svg+xml" href="{% static 'icons/icon.svg' %}">
+    <link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <link href="{% static 'css/assistant.css' %}" rel="stylesheet">
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+<body class="d-flex flex-column min-vh-100">
+<nav class="navbar navbar-expand-lg hd-navbar">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="{% url 'tickets:public_create' %}">
-            Help Desk <span class="badge bg-warning text-dark ms-1">Кыргыз Алтын</span>
+        <a class="hd-brand" href="{% url 'tickets:public_create' %}">
+            <span>Help Desk</span>
+            <span class="hd-brand-badge">Кыргыз Алтын</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <button class="navbar-toggler border-0 shadow-none px-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Переключить навигацию">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-1">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'tickets:public_create' %}">Подать заявку</a>
+                    <a class="nav-link hd-nav-link {% if request.resolver_match.url_name == 'public_create' %}active{% endif %}" href="{% url 'tickets:public_create' %}">
+                        Подать заявку
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link hd-nav-link {% if request.resolver_match.app_name == 'assistant' %}active{% endif %}" href="{% url 'assistant:chat_page' %}">
+                        ИТ-помощник
+                    </a>
                 </li>
                 {% if user.is_authenticated and user.is_tech_role %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'tickets:tech_queue' %}">Очередь техника</a>
+                    <a class="nav-link hd-nav-link {% if request.resolver_match.url_name == 'tech_queue' or request.resolver_match.url_name == 'tech_detail' %}active{% endif %}" href="{% url 'tickets:tech_queue' %}">
+                        Очередь техника
+                    </a>
                 </li>
                 {% endif %}
                 {% if user.is_authenticated and user.is_admin_role %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'tickets:admin_ticket_list' %}">Все заявки</a>
+                    <a class="nav-link hd-nav-link {% if request.resolver_match.url_name == 'admin_ticket_list' or request.resolver_match.url_name == 'admin_ticket_detail' %}active{% endif %}" href="{% url 'tickets:admin_ticket_list' %}">
+                        Все заявки
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'locations:admin_locations' %}">Этажи и кабинеты</a>
+                    <a class="nav-link hd-nav-link {% if request.resolver_match.app_name == 'locations' %}active{% endif %}" href="{% url 'locations:admin_locations' %}">
+                        Этажи и кабинеты
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'tickets:admin_categories' %}">Категории</a>
+                    <a class="nav-link hd-nav-link {% if 'category' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'tickets:admin_categories' %}">
+                        Категории
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'accounts:user_list' %}">Специалисты</a>
+                    <a class="nav-link hd-nav-link {% if request.resolver_match.app_name == 'accounts' and request.resolver_match.url_name != 'login' %}active{% endif %}" href="{% url 'accounts:user_list' %}">
+                        Специалисты
+                    </a>
                 </li>
                 {% endif %}
             </ul>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 pt-2 pt-lg-0 border-top border-lg-0 mt-2 mt-lg-0">
                 {% if user.is_authenticated %}
-                    <span class="text-light small me-2">{{ user.display_name }} ({{ user.get_role_display }})</span>
+                    <span class="hd-user-badge">
+                        <span>{{ user.display_name }}</span>
+                        <span class="hd-user-role">({{ user.get_role_display }})</span>
+                    </span>
                     <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-light btn-sm">Выйти</button>
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Выйти</button>
                     </form>
                 {% else %}
                     <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-sm">Вход для техслужбы</a>
@@ -60,21 +86,30 @@
 <main class="container py-4 flex-grow-1">
     {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mb-4" role="alert">
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
             </div>
         {% endfor %}
     {% endif %}
     {% block content %}{% endblock %}
 </main>
 
-<footer class="bg-white border-top py-3 mt-auto">
+<footer class="hd-footer mt-auto">
     <div class="container text-center text-muted small">
         Внутренняя система технических заявок Help Desk — ОАО «Кыргыз Алтын»
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('{% url "service_worker" %}', { scope: '/' }).catch(function(err) {
+                console.debug('ServiceWorker registration error:', err);
+            });
+        });
+    }
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

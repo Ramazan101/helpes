@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Help Desk «Кыргыз Алтын»</title>
+    <link rel="stylesheet" href="css/widget.css">
+</head>
+<body>
+<div class="widget-root">
+    <!-- Шапка плавающего окна с зоной перемещения для Tauri -->
+    <header class="widget-titlebar" data-tauri-drag-region>
+        <div class="widget-drag-area" data-tauri-drag-region>
+            <img src="../src-tauri/icons/32x32.png" width="16" height="16" alt="Icon" data-tauri-drag-region>
+            <span class="widget-app-title" data-tauri-drag-region>Help Desk Помощник</span>
+        </div>
+        <div class="widget-window-actions">
+            <button id="btn-pin" type="button" class="widget-action-btn pin-active" title="Закрепить поверх всех окон (Always on Top)">
+                📌
+            </button>
+            <button id="btn-min" type="button" class="widget-action-btn" title="Свернуть">
+                —
+            </button>
+            <button id="btn-close" type="button" class="widget-action-btn btn-close" title="Скрыть в трей">
+                ✕
+            </button>
+        </div>
+    </header>
+
+    <!-- Основное содержимое: фрейм Django-виджета -->
+    <iframe id="content-frame" class="widget-content-frame" src="about:blank"></iframe>
+
+    <!-- Автономный оффлайн-режим (если сервер Django временно недоступен) -->
+    <div id="offline-view" class="widget-offline-container" style="display: none;">
+        <div>
+            <span class="offline-badge">
+                <span>⚠️</span> Сервер поддержки недоступен
+            </span>
+            <div class="offline-memo-card">
+                <div class="offline-memo-title">Памятка самопроверки техники:</div>
+                <ul style="padding-left: 18px; margin: 6px 0 0 0;">
+                    <li><strong>Принтер:</strong> проверьте питание, кабель USB/LAN и наличие бумаги в лотке.</li>
+                    <li><strong>Сеть / Интернет:</strong> проверьте сетевой патч-корд в разъёме компьютера.</li>
+                    <li><strong>Компьютер:</strong> проверьте тумблер на блоке питания и сетевой фильтр.</li>
+                </ul>
+            </div>
+            <div class="offline-memo-card" style="background-color: #f1f5f9;">
+                <div class="offline-memo-title">Өз алдынча текшерүү (кыргызча):</div>
+                <div class="small text-muted">
+                    Интернет кабелин жана принтердин сайгычын текшериңиз. Компьютерди кайра жүктөңүз.
+                </div>
+            </div>
+            <button id="btn-retry" type="button" class="btn-retry">
+                Повторить подключение к Help Desk
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="js/widget.js"></script>
+</body>
+</html>

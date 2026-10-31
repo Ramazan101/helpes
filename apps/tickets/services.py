@@ -69,7 +69,18 @@ def create_public_ticket(
             new_status=Ticket.Status.NEW,
             note=f"Заявка отправлена сотрудником {ticket.employee_name}.",
         )
+
+        def _notify():
+            try:
+                from .push_service import notify_technicians_new_ticket
+                notify_technicians_new_ticket(ticket)
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).warning("Не удалось отправить push-уведомление о новой заявке: %s", exc)
+
+        transaction.on_commit(_notify)
         return ticket
+
 
 
 def claim_ticket(*, ticket_number: str, tech_user: User) -> Ticket:

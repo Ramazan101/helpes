@@ -1,54 +1,94 @@
 {% extends "base.html" %}
 {% block title %}Категории оборудования — Help Desk{% endblock %}
+
 {% block content %}
-<h1 class="h3 fw-bold mb-4">Категории оборудования и неисправностей</h1>
+<div class="mb-4">
+    <h1 class="h3 fw-bold mb-1">Категории оборудования</h1>
+    <p class="text-muted small mb-0">Классификатор неисправностей для формы подачи заявок</p>
+</div>
+
 <div class="row g-4">
     <div class="col-12 col-md-4">
-        <div class="card shadow-sm border-0 p-3">
-            <h2 class="h5 fw-bold mb-3">Новая категория</h2>
-            <form method="post">
-                {% csrf_token %}
-                <div class="mb-2">
-                    <label class="form-label small fw-semibold">{{ form.name.label }}</label>
-                    {{ form.name }}
-                    {% if form.name.errors %}
-                        <div class="text-danger small mt-1">{{ form.name.errors|join:", " }}</div>
-                    {% endif %}
-                </div>
-                <div class="mb-2">
-                    <label class="form-label small fw-semibold">{{ form.description.label }}</label>
-                    {{ form.description }}
-                </div>
-                <div class="mb-2">
-                    <label class="form-label small fw-semibold">{{ form.sort_order.label }}</label>
-                    {{ form.sort_order }}
-                </div>
-                <div class="form-check mb-3">
-                    {{ form.is_active }}
-                    <label class="form-check-label">{{ form.is_active.label }}</label>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Добавить категорию</button>
-            </form>
+        <div class="hd-card">
+            <div class="hd-card-header bg-white">
+                <span class="fw-semibold">Новая категория</span>
+            </div>
+            <div class="hd-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger small mt-1">{{ form.name.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small" for="{{ form.sort_order.id_for_label }}">{{ form.sort_order.label }}</label>
+                        {{ form.sort_order }}
+                    </div>
+                    <div class="form-check mb-3">
+                        {{ form.is_active }}
+                        <label class="form-check-label small" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold">
+                        Добавить категорию
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
+
     <div class="col-12 col-md-8">
-        <div class="card shadow-sm border-0 p-3">
-            <table class="table align-middle mb-0">
-                <thead><tr><th>Название</th><th>Порядок</th><th>Статус</th><th></th></tr></thead>
-                <tbody>
-                    {% for c in categories %}
-                    <tr>
-                        <td>
-                            <div class="fw-semibold">{{ c.name }}</div>
-                            <div class="small text-muted">{{ c.description }}</div>
-                        </td>
-                        <td>{{ c.sort_order }}</td>
-                        <td>{% if c.is_active %}<span class="badge bg-success">Активна</span>{% else %}<span class="badge bg-secondary">Скрыта</span>{% endif %}</td>
-                        <td class="text-end"><a href="{% url 'tickets:admin_category_edit' c.pk %}" class="btn btn-sm btn-outline-primary">Изменить</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="hd-card">
+            <div class="hd-card-header bg-white">
+                <span class="fw-semibold">Существующие категории</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th style="width: 100px;">Порядок</th>
+                            <th style="width: 120px;">Статус</th>
+                            <th class="text-end" style="width: 100px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in categories %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold text-dark">{{ c.name }}</div>
+                                {% if c.description %}
+                                    <div class="small text-muted">{{ c.description }}</div>
+                                {% endif %}
+                            </td>
+                            <td>{{ c.sort_order }}</td>
+                            <td>
+                                {% if c.is_active %}
+                                    <span class="badge status-badge-DONE">Активна</span>
+                                {% else %}
+                                    <span class="badge badge-inactive">Скрыта</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'tickets:admin_category_edit' c.pk %}" class="btn btn-sm btn-outline-primary">
+                                    Изменить
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-muted text-center py-4">Категории пока не добавлены.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

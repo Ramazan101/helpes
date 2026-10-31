@@ -1,34 +1,70 @@
 {% extends "base.html" %}
 {% block title %}Заявка {{ ticket.ticket_number }} принята — Help Desk{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-12 col-md-8 col-lg-6">
-        <div class="card shadow-sm border-0 text-center p-4">
-            <div class="card-body">
-                <div class="badge bg-success fs-6 mb-3 px-3 py-2">Заявка успешно зарегистрирована</div>
-                <h1 class="display-6 fw-bold mb-2">{{ ticket.ticket_number }}</h1>
+        <div class="hd-card text-center">
+            <div class="hd-card-body p-4 p-md-5">
+                <div class="badge status-badge-DONE mb-3 px-3 py-2 fs-6">
+                    Заявка успешно зарегистрирована
+                </div>
+                <h1 class="h2 fw-bold mb-2">{{ ticket.ticket_number }}</h1>
                 <p class="text-muted mb-4">
-                    Заявка передана в общую очередь технической службы «Кыргыз Алтын».
+                    Заявка передана в общую очередь дежурной технической службы «Кыргыз Алтын».
                 </p>
 
-                <div class="text-start bg-light rounded p-3 mb-4">
-                    <p class="mb-1"><strong>Сотрудник:</strong> {{ ticket.employee_name }}</p>
-                    <p class="mb-1"><strong>Местоположение:</strong> {{ ticket.location_display }}</p>
-                    <p class="mb-1"><strong>Проблема:</strong> {{ ticket.short_description }}</p>
-                    <p class="mb-1"><strong>Статус:</strong> {{ ticket.get_status_display }}</p>
-                    <p class="mb-1"><strong>Оборудование:</strong></p>
-                    <ul class="mb-0">
-                        {% for item in ticket.items.all %}
-                            <li>{{ item.category.name }} — {{ item.quantity }} шт.</li>
-                        {% endfor %}
-                    </ul>
+                <div class="hd-card text-start mb-4">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted" style="width: 35%;">Сотрудник</td>
+                                    <td class="fw-semibold">{{ ticket.employee_name }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Местоположение</td>
+                                    <td class="fw-semibold">{{ ticket.location_display }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Оборудование</td>
+                                    <td>
+                                        {% for item in ticket.items.all %}
+                                            <div>{{ item.category.name }} — <strong>{{ item.quantity }} шт.</strong></div>
+                                        {% empty %}
+                                            <span class="text-muted">—</span>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Проблема</td>
+                                    <td>{{ ticket.short_description }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Статус</td>
+                                    <td>
+                                        <span class="badge status-badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <a href="{% url 'tickets:public_create' %}" class="btn btn-outline-primary">
-                    Отправить ещё одну заявку
-                </a>
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+                    <a href="{% url 'tickets:public_create' %}" class="btn btn-primary">
+                        Отправить ещё одну заявку
+                    </a>
+                    <a href="{% url 'assistant:chat_page' %}" class="btn btn-outline-secondary">
+                        Спросить ИТ-помощника
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% include "assistant/includes/widget.html" %}
 {% endblock %}

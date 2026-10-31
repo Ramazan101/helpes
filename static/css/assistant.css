@@ -1,0 +1,200 @@
+/* ==========================================================================
+   ИТ-помощник Helpes — Кыргыз Алтын (Десктоп, Чат и Мобильный виджет)
+   Использует переменные из styles.css
+   ========================================================================== */
+
+.assistant-chat-card {
+  display: flex;
+  flex-direction: column;
+  height: 72vh;
+  min-height: 480px;
+  max-height: 760px;
+  background-color: var(--hd-surface, #ffffff);
+  border: 1px solid var(--hd-border, #d9e1ec);
+  border-radius: var(--hd-radius-md, 10px);
+  box-shadow: var(--hd-shadow-sm, 0 1px 2px rgba(16,24,40,0.04));
+  overflow: hidden;
+}
+
+.assistant-messages-box {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  background-color: var(--hd-bg, #f7f9fc);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.25rem;
+}
+
+.assistant-msg {
+  display: flex;
+  width: 100%;
+}
+
+.assistant-msg-user {
+  justify-content: flex-end;
+}
+
+.assistant-msg-bot {
+  justify-content: flex-start;
+}
+
+.assistant-msg-bubble {
+  max-width: 82%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Пузырь пользователя — корпоративный синий */
+.assistant-msg-user .assistant-msg-bubble {
+  background-color: var(--hd-primary, #1d4ed8);
+  color: #ffffff;
+  border-bottom-right-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Пузырь помощника — чистый белый с тонкой границей */
+.assistant-msg-bot .assistant-msg-bubble {
+  background-color: var(--hd-surface, #ffffff);
+  color: var(--hd-text-primary, #111827);
+  border: 1px solid var(--hd-border, #d9e1ec);
+  border-bottom-left-radius: 2px;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.03);
+}
+
+.assistant-typing .assistant-msg-bubble {
+  background-color: var(--hd-surface-muted, #f1f5f9);
+  color: var(--hd-text-secondary, #475569);
+  font-style: italic;
+}
+
+.assistant-input {
+  resize: none;
+  font-size: 0.95rem;
+  border: 1px solid var(--hd-border, #d9e1ec);
+}
+
+/* Быстрые подсказки-чипсы */
+.assistant-quick-btn {
+  background-color: var(--hd-surface, #ffffff) !important;
+  color: var(--hd-text-primary, #111827) !important;
+  border: 1px solid var(--hd-border, #d9e1ec) !important;
+  border-radius: var(--hd-radius-pill, 9999px) !important;
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+}
+.assistant-quick-btn:hover {
+  background-color: var(--hd-primary-light, #eff6ff) !important;
+  border-color: var(--hd-primary, #1d4ed8) !important;
+  color: var(--hd-primary, #1d4ed8) !important;
+}
+
+/* ==========================================================================
+   Плавающий виджет на страницах сотрудника
+   ========================================================================== */
+
+.assistant-widget-root {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 1045;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.assistant-widget-Launcher {
+  border-radius: var(--hd-radius-pill, 9999px) !important;
+  padding: 0.65rem 1.15rem !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  background-color: var(--hd-primary, #1d4ed8) !important;
+  border-color: var(--hd-primary, #1d4ed8) !important;
+  color: #ffffff !important;
+  box-shadow: var(--hd-shadow-md, 0 4px 6px -1px rgba(0,0,0,0.1)) !important;
+  transition: all 0.2s ease;
+}
+.assistant-widget-Launcher:hover {
+  background-color: var(--hd-primary-hover, #1e40af) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--hd-shadow-lg, 0 10px 15px -3px rgba(0,0,0,0.1)) !important;
+}
+
+.assistant-widget-panel {
+  width: 380px;
+  max-width: calc(100vw - 2rem);
+  height: 520px;
+  max-height: calc(100vh - 6rem);
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--hd-surface, #ffffff);
+  border: 1px solid var(--hd-border, #d9e1ec);
+  border-radius: var(--hd-radius-md, 10px);
+  box-shadow: var(--hd-shadow-lg, 0 10px 25px -3px rgba(16,24,40,0.1));
+  overflow: hidden;
+}
+
+.assistant-widget-header {
+  background-color: var(--hd-surface, #ffffff);
+  border-bottom: 1px solid var(--hd-border, #d9e1ec);
+  padding: 0.75rem 1rem;
+}
+
+.assistant-widget-subtitle {
+  font-size: 0.75rem;
+  color: var(--hd-text-secondary, #475569);
+}
+
+.assistant-widget-messages {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  background-color: var(--hd-bg, #f7f9fc);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 1rem;
+}
+
+.btn-xs {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.78rem;
+  border-radius: var(--hd-radius-sm, 6px);
+}
+
+/* Адаптивность для мобильных экранов (до 576px / 390px) */
+@media (max-width: 575.98px) {
+  .assistant-chat-card {
+    height: 70vh;
+    min-height: 400px;
+  }
+
+  .assistant-widget-root {
+    right: 1rem;
+    bottom: 1rem;
+  }
+
+  .assistant-widget-panel {
+    width: calc(100vw - 2rem);
+    height: 68vh;
+    max-height: 460px;
+  }
+
+  .assistant-widget-Launcher {
+    padding: 0.55rem 0.95rem !important;
+    font-size: 0.9rem;
+  }
+
+  /* Дополнительный нижний отступ, чтобы кнопка виджета не закрывала кнопку отправки формы */
+  body.has-assistant-widget {
+    padding-bottom: 5rem;
+  }
+}

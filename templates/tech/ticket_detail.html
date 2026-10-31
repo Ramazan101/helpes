@@ -1,37 +1,73 @@
 {% extends "base.html" %}
 {% block title %}Заявка {{ ticket.ticket_number }} — Help Desk{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 fw-bold mb-0">Заявка {{ ticket.ticket_number }}</h1>
-    <a href="{% url 'tickets:tech_queue' %}" class="btn btn-outline-secondary btn-sm">← Назад в очередь</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div class="d-flex align-items-center gap-2">
+        <h1 class="h3 fw-bold mb-0">Заявка {{ ticket.ticket_number }}</h1>
+        <span class="badge status-badge-{{ ticket.status }} fs-6">{{ ticket.get_status_display }}</span>
+    </div>
+    <a href="{% url 'tickets:tech_queue' %}" class="btn btn-outline-secondary btn-sm">
+        ← Назад в очередь
+    </a>
 </div>
 
 <div class="row g-4">
+    <!-- Левая колонка: данные заявки и комментарии -->
     <div class="col-12 col-lg-7">
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="badge status-badge-{{ ticket.status }} fs-6">{{ ticket.get_status_display }}</span>
-                    <span class="text-muted small">Создана: {{ ticket.created_at|date:"d.m.Y H:i" }}</span>
+        <div class="hd-card mb-4">
+            <div class="hd-card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">Информация об обращении</span>
+                <span class="text-muted small">Создана: {{ ticket.created_at|date:"d.m.Y H:i" }}</span>
+            </div>
+            <div class="hd-card-body">
+                <div class="table-responsive mb-3">
+                    <table class="table mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted" style="width: 32%;">Сотрудник</td>
+                                <td class="fw-semibold">{{ ticket.employee_name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Местоположение</td>
+                                <td class="fw-semibold">{{ ticket.location_display }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Исполнитель</td>
+                                <td>
+                                    {% if ticket.assigned_to %}
+                                        <span class="fw-semibold text-dark">{{ ticket.assigned_to.display_name }}</span>
+                                    {% else %}
+                                        <span class="badge status-badge-WAITING">Не назначен (в общей очереди)</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Оборудование</td>
+                                <td>
+                                    {% for item in ticket.items.all %}
+                                        <div>{{ item.category.name }} — <strong>{{ item.quantity }} шт.</strong></div>
+                                    {% empty %}
+                                        <span class="text-muted">—</span>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <p class="mb-2"><strong>Сотрудник:</strong> {{ ticket.employee_name }}</p>
-                <p class="mb-2"><strong>Местоположение:</strong> {{ ticket.location_display }}</p>
-                <p class="mb-2"><strong>Исполнитель:</strong>
-                    {% if ticket.assigned_to %}{{ ticket.assigned_to.display_name }}{% else %}<span class="text-danger">Не назначен (свободна)</span>{% endif %}
-                </p>
-                <hr>
-                <h2 class="h6 fw-bold">Оборудование ({{ ticket.total_equipment_count }} шт.):</h2>
-                <ul>
-                    {% for item in ticket.items.all %}
-                        <li>{{ item.category.name }} — <strong>{{ item.quantity }} шт.</strong></li>
-                    {% endfor %}
-                </ul>
-                <h2 class="h6 fw-bold">Краткое описание неисправности:</h2>
-                <p>{{ ticket.short_description }}</p>
+
+                <div class="mb-3">
+                    <div class="form-label text-muted small text-uppercase">Неисправность</div>
+                    <div class="fw-medium p-3 bg-light rounded border">{{ ticket.short_description }}</div>
+                </div>
+
                 {% if ticket.detailed_description %}
-                    <h2 class="h6 fw-bold">Подробное описание:</h2>
-                    <p class="text-pre-wrap">{{ ticket.detailed_description }}</p>
+                    <div class="mb-3">
+                        <div class="form-label text-muted small text-uppercase">Подробности проблемы</div>
+                        <div class="p-3 bg-light rounded border text-pre-wrap small">{{ ticket.detailed_description }}</div>
+                    </div>
                 {% endif %}
+
                 {% if ticket.resolution_summary %}
                     <div class="alert alert-success mt-3 mb-0">
                         <strong>Результат ремонта:</strong> {{ ticket.resolution_summary }}
@@ -40,86 +76,123 @@
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body">
-                <h2 class="h5 fw-bold mb-3">Комментарии о ходе диагностики</h2>
-                {% for c in ticket.comments.all %}
-                    <div class="border-bottom pb-2 mb-2">
-                        <div class="small text-muted">{{ c.author.display_name }} — {{ c.created_at|date:"d.m.Y H:i" }}</div>
-                        <div>{{ c.body }}</div>
-                    </div>
-                {% empty %}
-                    <p class="text-muted small">Пока нет рабочих комментариев.</p>
-                {% endfor %}
-                <form method="post" action="{% url 'tickets:tech_add_comment' ticket.ticket_number %}" class="mt-3">
+        <!-- Комментарии специалистов -->
+        <div class="hd-card mb-4">
+            <div class="hd-card-header bg-white">
+                <span class="fw-semibold">Рабочие заметки и ход диагностики</span>
+            </div>
+            <div class="hd-card-body">
+                <div class="d-flex flex-column gap-3 mb-3">
+                    {% for c in ticket.comments.all %}
+                        <div class="p-3 bg-light rounded border">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-semibold small text-dark">{{ c.author.display_name }}</span>
+                                <span class="text-muted small">{{ c.created_at|date:"d.m.Y H:i" }}</span>
+                            </div>
+                            <div class="small text-pre-wrap">{{ c.body }}</div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted small mb-0">Пока нет добавленных заметок от технических специалистов.</p>
+                    {% endfor %}
+                </div>
+
+                <form method="post" action="{% url 'tickets:tech_add_comment' ticket.ticket_number %}" class="pt-2 border-top">
                     {% csrf_token %}
+                    <label class="form-label small text-muted">Добавить комментарий о диагностике</label>
                     {{ comment_form.body }}
-                    <button type="submit" class="btn btn-outline-primary btn-sm mt-2">Добавить комментарий</button>
+                    <button type="submit" class="btn btn-outline-primary btn-sm mt-2">
+                        Опубликовать комментарий
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Правая колонка: действия со статусом и история -->
     <div class="col-12 col-lg-5">
         {% if not ticket.assigned_to and ticket.status != 'DONE' %}
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body">
-                <h2 class="h5 fw-bold">Свободная заявка</h2>
+        <div class="hd-card mb-4 border-primary">
+            <div class="hd-card-body p-4 text-center">
+                <h2 class="h5 fw-bold mb-2">Заявка свободна</h2>
+                <p class="text-muted small mb-3">Назначьте заявку на себя для начала диагностических или ремонтных работ.</p>
                 <form method="post" action="{% url 'tickets:tech_claim' ticket.ticket_number %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-success btn-lg w-100">Взять заявку в работу</button>
+                    <button type="submit" class="btn btn-success btn-lg w-100 fw-semibold">
+                        Взять заявку в работу
+                    </button>
                 </form>
             </div>
         </div>
         {% endif %}
 
         {% if can_manage_ticket %}
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body">
-                <h2 class="h5 fw-bold mb-3">Изменить статус / завершить ремонт</h2>
+        <div class="hd-card mb-4">
+            <div class="hd-card-header bg-white">
+                <span class="fw-semibold">Управление статусом заявки</span>
+            </div>
+            <div class="hd-card-body">
                 <form method="post" action="{% url 'tickets:tech_update_status' ticket.ticket_number %}">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label class="form-label">{{ status_form.status.label }}</label>
+                        <label class="form-label" for="{{ status_form.status.id_for_label }}">{{ status_form.status.label }}</label>
                         {{ status_form.status }}
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">{{ status_form.resolution_summary.label }}</label>
+                        <label class="form-label" for="{{ status_form.resolution_summary.id_for_label }}">{{ status_form.resolution_summary.label }}</label>
                         {{ status_form.resolution_summary }}
+                        <div class="form-text">Обязательно заполните при переводе заявки в статус «Выполнена».</div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">{{ status_form.comment_text.label }}</label>
+                        <label class="form-label" for="{{ status_form.comment_text.id_for_label }}">{{ status_form.comment_text.label }}</label>
                         {{ status_form.comment_text }}
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Сохранить статус и результат</button>
+                    <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                        Сохранить статус
+                    </button>
                 </form>
 
                 {% if ticket.assigned_to and ticket.status != 'DONE' %}
-                <hr>
-                <form method="post" action="{% url 'tickets:tech_return_to_queue' ticket.ticket_number %}">
-                    {% csrf_token %}
-                    <label class="form-label small text-muted">{{ return_form.reason.label }}</label>
-                    <div class="input-group">
-                        {{ return_form.reason }}
-                        <button type="submit" class="btn btn-outline-warning">Вернуть в очередь</button>
-                    </div>
-                </form>
+                <div class="pt-3 mt-3 border-top">
+                    <form method="post" action="{% url 'tickets:tech_return_to_queue' ticket.ticket_number %}">
+                        {% csrf_token %}
+                        <label class="form-label small text-muted" for="{{ return_form.reason.id_for_label }}">
+                            {{ return_form.reason.label }}
+                        </label>
+                        <div class="input-group">
+                            {{ return_form.reason }}
+                            <button type="submit" class="btn btn-outline-warning">
+                                В очередь
+                            </button>
+                        </div>
+                    </form>
+                </div>
                 {% endif %}
             </div>
         </div>
         {% endif %}
 
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h2 class="h6 fw-bold mb-3">История изменений</h2>
-                <ul class="list-unstyled small mb-0">
+        <!-- История изменений -->
+        <div class="hd-card">
+            <div class="hd-card-header bg-white">
+                <span class="fw-semibold">История изменений</span>
+            </div>
+            <div class="hd-card-body p-3">
+                <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
                     {% for h in ticket.history.all %}
-                    <li class="mb-2 pb-2 border-bottom">
-                        <strong>{{ h.get_action_display }}</strong>
-                        <span class="text-muted">({{ h.created_at|date:"d.m.Y H:i" }})</span><br>
-                        {% if h.actor %}Инициатор: {{ h.actor.display_name }}<br>{% endif %}
-                        {% if h.note %}<span class="text-muted">{{ h.note }}</span>{% endif %}
+                    <li class="pb-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold text-dark">{{ h.get_action_display }}</span>
+                            <span class="text-muted">{{ h.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        {% if h.actor %}
+                            <div class="text-muted">Инициатор: {{ h.actor.display_name }}</div>
+                        {% endif %}
+                        {% if h.note %}
+                            <div class="text-muted">{{ h.note }}</div>
+                        {% endif %}
                     </li>
+                    {% empty %}
+                        <li class="text-muted">Нет записей в истории.</li>
                     {% endfor %}
                 </ul>
             </div>

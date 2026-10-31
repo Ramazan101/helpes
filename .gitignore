@@ -224,3 +224,46 @@ __marimo__/
 *.sqlite3
 staticfiles/
 *.dump
+
+# SSL certificates and keys
+*.pem
+*.key
+docker/ssl/live/
+docker/certbot/
+sqlite_data_export.json
+
+# Release artifacts
+helpes-deployment-*.tar.gz
+release_manifest.sha256
+
+# Production secrets and environment
+.env
+.env.*
+!.env.example
+
+# Local databases and backups
+*.sqlite3
+*.sqlite3-journal
+*.dump
+*.backup
+
+# Deployment archives and manifests
+*.tar.gz
+release_manifest.sha256
+
+# Private keys and certificates
+*.pem
+*.key
+docker/ssl/*
+!docker/ssl/.gitkeep
+docker/certbot/*
+!docker/certbot/.gitkeep
+
+# Build artifacts
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+node_modules/
+desktop/tauri-widget/src-tauri/target/
+desktop/tauri-widget/node_modules/

@@ -1,43 +1,66 @@
 {% extends "base.html" %}
 {% block title %}Специалисты и роли — Help Desk{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 fw-bold mb-0">Учётные записи специалистов</h1>
-    <a href="{% url 'accounts:user_add' %}" class="btn btn-primary">+ Добавить специалиста</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 fw-bold mb-0">Персонал технической службы</h1>
+        <p class="text-muted small mb-0">Управление учётными записями, ролями и доступом специалистов</p>
+    </div>
+    <a href="{% url 'accounts:user_add' %}" class="btn btn-primary">
+        + Добавить специалиста
+    </a>
 </div>
-<div class="card shadow-sm border-0">
+
+<div class="hd-card">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
+            <thead>
                 <tr>
                     <th>Логин</th>
-                    <th>ФИО</th>
-                    <th>Роль</th>
-                    <th>Статус</th>
-                    <th>Открытых заявок</th>
-                    <th class="text-end">Действия</th>
+                    <th>ФИО специалиста</th>
+                    <th style="width: 170px;">Роль</th>
+                    <th style="width: 130px;">Статус</th>
+                    <th style="width: 150px;">В работе заявок</th>
+                    <th class="text-end" style="width: 180px;">Действия</th>
                 </tr>
             </thead>
             <tbody>
                 {% for u in users %}
                 <tr>
-                    <td class="fw-semibold">{{ u.username }}</td>
+                    <td class="fw-bold">{{ u.username }}</td>
                     <td>{{ u.display_name }}</td>
-                    <td>{{ u.get_role_display }}</td>
+                    <td>
+                        <span class="badge status-badge-NEW">{{ u.get_role_display }}</span>
+                    </td>
                     <td>
                         {% if u.is_active %}
-                            <span class="badge bg-success">Активен</span>
+                            <span class="badge status-badge-DONE">Активен</span>
                         {% else %}
-                            <span class="badge bg-secondary">Отключён</span>
+                            <span class="badge badge-inactive">Отключён</span>
                         {% endif %}
                     </td>
-                    <td>{{ u.open_tickets_count }}</td>
+                    <td>
+                        <span class="fw-semibold {% if u.open_tickets_count > 0 %}text-primary{% else %}text-muted{% endif %}">
+                            {{ u.open_tickets_count }}
+                        </span>
+                    </td>
                     <td class="text-end">
-                        <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-sm btn-outline-primary">Изменить</a>
-                        {% if u.is_active and u.pk != request.user.pk %}
-                            <a href="{% url 'accounts:user_deactivate' u.pk %}" class="btn btn-sm btn-outline-danger">Отключить</a>
-                        {% endif %}
+                        <div class="d-inline-flex gap-1 justify-content-end">
+                            <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-sm btn-outline-primary">
+                                Изменить
+                            </a>
+                            {% if u.is_active and u.pk != request.user.pk %}
+                                <a href="{% url 'accounts:user_deactivate' u.pk %}" class="btn btn-sm btn-outline-danger">
+                                    Отключить
+                                </a>
+                            {% endif %}
+                        </div>
                     </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">Специалисты ещё не зарегистрированы.</td>
                 </tr>
                 {% endfor %}
             </tbody>

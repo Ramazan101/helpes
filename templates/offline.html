@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Оффлайн-режим — Help Desk «Кыргыз Алтын»</title>
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+        }
+        .offline-header {
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .offline-brand {
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .offline-badge {
+            background-color: #d97706;
+            color: #ffffff;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .offline-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+        }
+        .offline-alert {
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 4px solid #d97706;
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .offline-btn-refresh {
+            background-color: #1e293b;
+            color: #ffffff;
+            border: none;
+            padding: 0.65rem 1.25rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+        .offline-btn-refresh:hover {
+            background-color: #334155;
+        }
+        .card-memo {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .card-memo h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            color: #0f172a;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 0.5rem;
+        }
+        .card-memo ol {
+            padding-left: 1.25rem;
+            line-height: 1.6;
+        }
+        .card-memo li {
+            margin-bottom: 0.5rem;
+        }
+        .lang-switch {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .lang-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .lang-btn.active {
+            background: #1e293b;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <header class="offline-header">
+        <div class="offline-brand">
+            <span>Help Desk</span>
+            <span class="offline-badge">Кыргыз Алтын</span>
+        </div>
+        <div>
+            <span style="font-size: 0.85rem; opacity: 0.85;">Оффлайн-памятка</span>
+        </div>
+    </header>
+
+    <main class="offline-container">
+        <div class="offline-alert">
+            <h2 style="margin: 0 0 0.5rem 0; font-size: 1.2rem; color: #92400e;">
+                📡 Связь с сервером отсутствует / Сервер менен байланыш жок
+            </h2>
+            <p style="margin: 0 0 1rem 0; font-size: 0.95rem; color: #78350f;">
+                Интернет или локальная сеть временно недоступны. Приложение загрузило автономную справочную памятку.
+                Проверьте подключение сетевого кабеля или обратитесь к дежурному технику лично.
+            </p>
+            <button class="offline-btn-refresh" onclick="window.location.reload()">
+                🔄 Повторить попытку подключения / Кайра туташуу
+            </button>
+        </div>
+
+        <div class="lang-switch">
+            <button type="button" class="lang-btn active" id="btn-ru" onclick="switchLang('ru')">Русский</button>
+            <button type="button" class="lang-btn" id="btn-ky" onclick="switchLang('ky')">Кыргызча</button>
+        </div>
+
+        <!-- Секция на русском языке -->
+        <div id="memo-ru">
+            <div class="card-memo">
+                <h3>1. Нет интернета, локальной сети или не открываются сайты</h3>
+                <ol>
+                    <li>Посмотрите на значок сети в правом нижнем углу экрана (рядом с часами): есть ли значок подключения (кабель или Wi-Fi).</li>
+                    <li>Если компьютер подключён проводом, проверьте, плотно ли сетевой кабель (RJ-45) вставлен в разъём сзади системного блока до щелчка.</li>
+                    <li>Если используется Wi-Fi, убедитесь, что режим «В самолёте» отключён, и попробуйте выключить и включить Wi-Fi заново.</li>
+                    <li>Уточните у коллег в кабинете: пропал ли интернет только у вас или во всём помещении.</li>
+                </ol>
+            </div>
+
+            <div class="card-memo">
+                <h3>2. Не печатает принтер или МФУ</h3>
+                <ol>
+                    <li>Проверьте, включён ли принтер кнопкой питания (светится ли зелёный индикатор).</li>
+                    <li>Убедитесь, что в лотке есть бумага и плотно ли вставлен USB-кабель или сетевой провод.</li>
+                    <li>Нажмите кнопку «Отмена» на корпусе принтера, если очередь зависла.</li>
+                    <li>Выключите принтер кнопкой на 15 секунд и включите снова.</li>
+                </ol>
+            </div>
+
+            <div class="card-memo">
+                <h3>3. Компьютер или монитор не включается</h3>
+                <ol>
+                    <li>Проверьте кнопку включения на сетевом фильтре (удлинителе) — светится ли индикатор.</li>
+                    <li>Убедитесь, что кабель питания плотно подключён к системному блоку и розетке.</li>
+                    <li>Проверьте кнопку включения на мониторе (горит ли лампочка внизу экрана).</li>
+                    <li>Если слышен шум вентиляторов, но экран чёрный — проверьте видеокабель (HDMI/DisplayPort).</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Секция на кыргызском языке -->
+        <div id="memo-ky" style="display: none;">
+            <div class="card-memo">
+                <h3>1. Интернет же локалдык тармак иштебей жатат</h3>
+                <ol>
+                    <li>Экрандын төмөнкү оң бурчундагы тармак белгисин караңыз: Wi-Fi же кабель туташканбы.</li>
+                    <li>Эгерде кабель колдонулса, тармак кабели компьютердин уячасына бекем сайылганын текшериңиз.</li>
+                    <li>Эгерде Wi-Fi болсо, «Учак режими» өчүк экенин текшерип, Wi-Fi'ды кайра күйгүзүңүз.</li>
+                    <li>Кабинеттеги кесиптештерден сураңыз: интернет жалгыз сизде жокпу же бүт кабинеттеби.</li>
+                </ol>
+            </div>
+
+            <div class="card-memo">
+                <h3>2. Принтер же МФУ басып чыгарбай жатат</h3>
+                <ol>
+                    <li>Принтер күйүп турганын текшериңиз (жашыл индикатор күйүшү керек).</li>
+                    <li>Кагаз лотогун жана USB же тармак кабели бекем сайылганын текшериңиз.</li>
+                    <li>Эгерде кагаз тыгылып калса, күч менен тартпастан техникке кабарлаңыз.</li>
+                    <li>Принтерди 15 секундга өчүрүп, кайра күйгүзүңүз.</li>
+                </ol>
+            </div>
+
+            <div class="card-memo">
+                <h3>3. Компьютер же монитор күйбөй жатат</h3>
+                <ol>
+                    <li>Узарткыч (сетевой фильтр) күйүп турганын жана розетканы текшериңиз.</li>
+                    <li>Кубат берүүчү кабель системдик блокко жана розеткага бекем сайылганын караңыз.</li>
+                    <li>Монитордун өзүнүн күйгүзүү баскычын текшериңиз.</li>
+                </ol>
+            </div>
+        </div>
+    </main>
+
+    <footer style="text-align: center; padding: 1.5rem; font-size: 0.85rem; color: #64748b; border-top: 1px solid #e2e8f0; background: #ffffff;">
+        ОАО «Кыргыз Алтын» — Служба технической поддержки Help Desk
+    </footer>
+
+    <script>
+        function switchLang(lang) {
+            document.getElementById('memo-ru').style.display = lang === 'ru' ? 'block' : 'none';
+            document.getElementById('memo-ky').style.display = lang === 'ky' ? 'block' : 'none';
+            document.getElementById('btn-ru').className = 'lang-btn' + (lang === 'ru' ? ' active' : '');
+            document.getElementById('btn-ky').className = 'lang-btn' + (lang === 'ky' ? ' active' : '');
+        }
+
+        // Автоматическая проверка появления сети каждые 10 секунд
+        window.addEventListener('online', function() {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

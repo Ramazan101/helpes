@@ -1,0 +1,120 @@
+{% load static %}
+<div class="assistant-widget-root" data-assistant-widget>
+  <!-- Кнопка открытия/сворачивания виджета -->
+  <button
+    type="button"
+    class="btn assistant-widget-Launcher"
+    data-assistant-toggle
+    aria-expanded="false"
+    aria-controls="assistant-widget-panel"
+    aria-label="Открыть ИТ-помощник"
+  >
+    <span class="assistant-launcher-icon" aria-hidden="true">💬</span>
+    <span class="assistant-launcher-label">ИТ-помощник</span>
+  </button>
+
+  <!-- Панель чата виджета -->
+  <section
+    id="assistant-widget-panel"
+    class="assistant-widget-panel d-none"
+    aria-label="Окно быстрого ИТ-помощника"
+    data-assistant-container
+    data-api-url="{% url 'assistant:chat_api' %}"
+    data-ticket-url="{% url 'tickets:public_create' %}"
+    data-max-length="1000"
+  >
+    <div class="assistant-widget-header d-flex align-items-center justify-content-between">
+      <div>
+        <strong class="d-block small text-dark">ИТ-помощник Helpes</strong>
+        <span class="assistant-widget-subtitle">Быстрая самопроверка (RU / KY)</span>
+      </div>
+      <div class="d-flex align-items-center gap-1">
+        <a
+          href="{% url 'assistant:chat_page' %}"
+          class="btn btn-outline-secondary btn-xs"
+          title="Открыть во весь экран"
+        >
+          ⤢
+        </a>
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-xs"
+          data-assistant-close
+          aria-label="Закрыть окно помощника"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Быстрые кнопки внутри виджета -->
+    <div class="px-3 py-2 bg-light border-bottom d-flex flex-wrap gap-1">
+      <button type="button" class="btn assistant-quick-btn btn-xs" data-assistant-prompt="Не печатает принтер, что проверить?">
+        Не печатает принтер
+      </button>
+      <button type="button" class="btn assistant-quick-btn btn-xs" data-assistant-prompt="Нет интернета в кабинете, что проверить?">
+        Нет интернета
+      </button>
+      <button type="button" class="btn assistant-quick-btn btn-xs" data-assistant-prompt="Компьютер не включается, что проверить?">
+        ПК не включается
+      </button>
+      <button type="button" class="btn assistant-quick-btn btn-xs" data-assistant-prompt="Не открывается программа, что делать?">
+        Не открывается ПО
+      </button>
+    </div>
+
+    <div
+      class="assistant-widget-messages"
+      data-assistant-messages
+      role="log"
+      aria-live="polite"
+    >
+      <div class="assistant-msg assistant-msg-bot">
+        <div class="assistant-msg-bubble">
+          Здравствуйте! Опишите проблему или нажмите подсказку выше — возможно, неполадку получится устранить за 1 минуту.
+        </div>
+      </div>
+    </div>
+
+    <div class="px-3 py-2 bg-light border-top d-none" data-assistant-escalation>
+      <div class="d-flex align-items-center justify-content-between gap-2">
+        <span class="small text-muted">Не помогло?</span>
+        <a href="#publicTicketForm" class="btn btn-xs btn-primary fw-semibold" data-assistant-focus-ticket>
+          Заполнить заявку
+        </a>
+      </div>
+    </div>
+
+    <div class="px-3 py-2 alert-danger border-top d-none" data-assistant-error-bar role="alert">
+      <div class="d-flex align-items-center justify-content-between gap-2">
+        <span class="small" data-assistant-error-text>Ошибка запроса.</span>
+        <button type="button" class="btn btn-xs btn-outline-danger" data-assistant-retry>
+          Повторить
+        </button>
+      </div>
+    </div>
+
+    <div class="p-2 bg-white border-top">
+      <form data-assistant-form novalidate>
+        {% csrf_token %}
+        <label for="assistant-widget-input" class="visually-hidden">Вопрос ИТ-помощнику</label>
+        <div class="input-group input-group-sm">
+          <input
+            type="text"
+            id="assistant-widget-input"
+            class="form-control"
+            maxlength="1000"
+            placeholder="Напишите вопрос..."
+            required
+            data-assistant-input
+          >
+          <button type="submit" class="btn btn-primary fw-semibold" data-assistant-submit aria-label="Отправить вопрос">
+            ➤
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<script src="{% static 'js/assistant.js' %}"></script>

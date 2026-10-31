@@ -1,0 +1,388 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Help Desk — ИТ-помощник «Кыргыз Алтын»</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'icons/icon.svg' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <link href="{% static 'css/assistant.css' %}" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f8fafc;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .widget-app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-sizing: border-box;
+        }
+
+        /* Кастомный заголовок окна для Tauri */
+        .widget-titlebar {
+            height: 38px;
+            background-color: #1e293b;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px 0 12px;
+            flex-shrink: 0;
+            cursor: grab;
+        }
+
+        .widget-titlebar-drag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            height: 100%;
+        }
+
+        .widget-titlebar-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: #f1f5f9;
+        }
+
+        .widget-titlebar-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .widget-ctrl-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.15s ease;
+        }
+
+        .widget-ctrl-btn:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .widget-ctrl-btn.active-pin {
+            color: #38bdf8;
+            background-color: rgba(56, 189, 248, 0.2);
+        }
+
+        .widget-ctrl-btn.btn-close-win:hover {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
+
+        /* Информационная строка сессии / статуса */
+        .widget-subbar {
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            display: inline-block;
+        }
+
+        .status-dot.offline {
+            background-color: #ef4444;
+        }
+
+        /* Быстрые подсказки */
+        .widget-quick-prompts {
+            padding: 8px 12px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+            flex-shrink: 0;
+            scrollbar-width: none;
+        }
+        .widget-quick-prompts::-webkit-scrollbar {
+            display: none;
+        }
+
+        .widget-quick-prompts .assistant-quick-btn {
+            font-size: 0.76rem !important;
+            padding: 0.2rem 0.6rem !important;
+        }
+
+        /* Контейнер сообщений */
+        .widget-messages {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            padding: 12px;
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .widget-messages .assistant-msg-bubble {
+            font-size: 0.88rem;
+            padding: 0.65rem 0.85rem;
+            max-width: 88%;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        /* Подвал ввода сообщения */
+        .widget-input-footer {
+            padding: 8px 12px;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .widget-input-footer textarea,
+        .widget-input-footer input {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+    </style>
+</head>
+<body>
+
+<div class="widget-app-container">
+    <!-- Кастомный заголовок окна для перемещения и управления в Tauri -->
+    <header class="widget-titlebar" data-tauri-drag-region>
+        <div class="widget-titlebar-drag" data-tauri-drag-region>
+            <img src="{% static 'icons/icon.svg' %}" alt="Кыргыз Алтын" width="18" height="18" data-tauri-drag-region>
+            <span class="widget-titlebar-title" data-tauri-drag-region>Help Desk ИТ-помощник</span>
+        </div>
+        <div class="widget-titlebar-controls">
+            <button id="btn-pin" type="button" class="widget-ctrl-btn active-pin" title="Закрепить поверх всех окон (Always on Top)">
+                📌
+            </button>
+            <button id="btn-min" type="button" class="widget-ctrl-btn" title="Свернуть">
+                —
+            </button>
+            <button id="btn-close" type="button" class="widget-ctrl-btn btn-close-win" title="Скрыть в трей">
+                ✕
+            </button>
+        </div>
+    </header>
+
+    <!-- Полоса состояния сессии и сети -->
+    <div class="widget-subbar">
+        <div class="d-flex align-items-center gap-2">
+            <span id="conn-dot" class="status-dot" title="Подключение активно"></span>
+            <span id="conn-label" class="text-secondary fw-medium">Онлайн</span>
+        </div>
+        <div>
+            {% if user.is_authenticated %}
+                <span class="text-dark fw-semibold">{{ user.display_name }}</span>
+                {% if user.is_tech_role %}
+                    <a href="{% url 'tickets:tech_queue' %}" class="badge bg-primary text-decoration-none ms-1" data-external-link title="Открыть очередь заявок в браузере">
+                        Очередь →
+                    </a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="text-muted text-decoration-none" title="Авторизация для сотрудников технической службы">
+                    Вход для техников
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Быстрые вопросы -->
+    <div class="widget-quick-prompts" role="group" aria-label="Быстрые вопросы">
+        {% for item in quick_prompts %}
+            <button type="button" class="btn assistant-quick-btn" data-assistant-prompt="{{ item.prompt }}">
+                {{ item.label }}
+            </button>
+        {% endfor %}
+    </div>
+
+    <!-- Контейнер чата AI-помощника -->
+    <div
+        class="widget-messages"
+        data-assistant-container
+        data-api-url="{% url 'assistant:chat_api' %}"
+        data-ticket-url="{% url 'tickets:public_create' %}"
+        data-max-length="{{ max_message_length|default:1000 }}"
+    >
+        <div class="assistant-messages-box p-0 bg-transparent" data-assistant-messages role="log" aria-live="polite">
+            <div class="assistant-msg assistant-msg-bot">
+                <div class="assistant-msg-bubble">
+                    Здравствуйте! Саламатсызбы! Я помогу быстро проверить неисправности ПК, принтера или сети. Выберите подсказку сверху или опишите, что случилось.
+                </div>
+            </div>
+        </div>
+
+        <!-- Блок рекомендации подать заявку -->
+        <div class="p-2 bg-light border rounded small d-none" data-assistant-escalation>
+            <div class="d-flex align-items-center justify-content-between gap-2">
+                <span class="text-dark fw-medium">Нужна помощь техника?</span>
+                <a href="{% url 'tickets:public_create' %}" class="btn btn-primary btn-sm py-1 px-2 fw-semibold" data-external-link>
+                    Подать заявку →
+                </a>
+            </div>
+        </div>
+
+        <!-- Блок ошибки -->
+        <div class="p-2 alert alert-danger mb-0 small d-none" data-assistant-error-bar role="alert">
+            <div class="d-flex align-items-center justify-content-between gap-2">
+                <span data-assistant-error-text>Ошибка связи.</span>
+                <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" data-assistant-retry>
+                    Повтор
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подвал ввода сообщения -->
+    <div class="widget-input-footer">
+        <form data-assistant-form novalidate>
+            {% csrf_token %}
+            <div class="input-group input-group-sm">
+                <input
+                    type="text"
+                    class="form-control"
+                    data-assistant-input
+                    placeholder="Опишите неполадку (например, принтер не печатает)..."
+                    maxlength="{{ max_message_length|default:1000 }}"
+                    required
+                    autocomplete="off"
+                >
+                <button class="btn btn-primary px-3" type="submit" data-assistant-submit title="Отправить сообщение">
+                    ➤
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/assistant.js' %}"></script>
+<script>
+/**
+ * Интеграция окна с нативным рантаймом Tauri 2 (если запущено внутри виджета).
+ */
+(function() {
+    'use strict';
+
+    const btnClose = document.getElementById('btn-close');
+    const btnMin = document.getElementById('btn-min');
+    const btnPin = document.getElementById('btn-pin');
+    const connDot = document.getElementById('conn-dot');
+    const connLabel = document.getElementById('conn-label');
+
+    let isAlwaysOnTop = true;
+
+    // Проверяем наличие глобального объекта Tauri 2
+    const tauri = window.__TAURI__;
+
+    if (tauri && tauri.window) {
+        const appWindow = tauri.window.getCurrentWindow();
+
+        if (btnClose) {
+            btnClose.addEventListener('click', function() {
+                // Скрываем окно в системный трей без уничтожения процесса
+                appWindow.hide().catch(console.error);
+            });
+        }
+
+        if (btnMin) {
+            btnMin.addEventListener('click', function() {
+                appWindow.minimize().catch(console.error);
+            });
+        }
+
+        if (btnPin) {
+            btnPin.addEventListener('click', async function() {
+                try {
+                    isAlwaysOnTop = !isAlwaysOnTop;
+                    await appWindow.setAlwaysOnTop(isAlwaysOnTop);
+                    if (isAlwaysOnTop) {
+                        btnPin.classList.add('active-pin');
+                        btnPin.setAttribute('title', 'Открепить (выключить Always-on-top)');
+                    } else {
+                        btnPin.classList.remove('active-pin');
+                        btnPin.setAttribute('title', 'Закрепить поверх всех окон (Always-on-top)');
+                    }
+                } catch (e) {
+                    console.debug('Always-on-top toggle error:', e);
+                }
+            });
+        }
+    } else {
+        // Запуск в обычном браузере для предпросмотра
+        if (btnClose) {
+            btnClose.addEventListener('click', function() {
+                if (window.opener) {
+                    window.close();
+                } else {
+                    document.querySelector('.widget-app-container').style.opacity = '0.5';
+                }
+            });
+        }
+        if (btnMin) {
+            btnMin.style.display = 'none';
+        }
+    }
+
+    // Перехват внешних ссылок (подать заявку, очередь) для открытия в системном браузере
+    document.addEventListener('click', function(e) {
+        const target = e.target.closest('a[data-external-link], a[target="_blank"]');
+        if (target && target.href) {
+            if (tauri && tauri.opener && tauri.opener.openUrl) {
+                e.preventDefault();
+                tauri.opener.openUrl(target.href).catch(function(err) {
+                    window.open(target.href, '_blank');
+                });
+            }
+        }
+    });
+
+    // Отслеживание статуса сети
+    function updateOnlineStatus() {
+        const isOnline = navigator.onLine;
+        if (connDot) {
+            connDot.className = 'status-dot ' + (isOnline ? '' : 'offline');
+        }
+        if (connLabel) {
+            connLabel.textContent = isOnline ? 'Онлайн' : 'Оффлайн';
+        }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+})();
+</script>
+</body>
+</html>
