@@ -1,0 +1,17 @@
+services:
+  web:
+    environment:
+      DJANGO_SECURE_COOKIES: "True"
+      PUSH_VAPID_PUBLIC_KEY: "${PUSH_VAPID_PUBLIC_KEY}"
+      PUSH_VAPID_PRIVATE_KEY: "/run/secrets/vapid/private_key.pem"
+      PUSH_VAPID_CLAIMS_EMAIL: "${PUSH_VAPID_CLAIMS_EMAIL}"
+    volumes:
+      - /etc/helpes-vapid:/run/secrets/vapid:ro
+
+volumes:
+  postgres_data:
+    external: true
+    name: helpes_postgres_data
+  static_volume:
+    external: true
+    name: helpes_static_volume
